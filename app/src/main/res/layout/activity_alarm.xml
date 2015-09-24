@@ -1,0 +1,82 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="fr.ralmn.wakemeup.activities.AlarmActivity">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25">
+
+            <TextClock
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textClock"
+            android:textAlignment="center"
+            android:textSize="@dimen/alarm_item_clock_size"
+            android:layout_gravity="top|center"
+                android:autoText="false"
+            android:gravity="top|center_horizontal"
+            android:paddingTop="64dp"
+            android:paddingLeft="@dimen/alarm_item_default_padding"
+            android:paddingRight="@dimen/alarm_item_default_padding"
+            android:paddingBottom="@dimen/alarm_item_default_padding" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:id="@+id/alarm_label"
+                android:textSize="32dp"
+                android:textStyle="italic"
+                android:textColor="#f0d1d1d1"
+                android:gravity="center"
+                android:textAlignment="center"
+                />
+        </LinearLayout>
+
+
+        <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="bottom"
+        android:layout_marginBottom="32dp">
+
+        <ImageButton
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:src="@drawable/ic_alarm_off_black"
+            android:id="@+id/alarm_done"
+            android:background="@android:color/transparent"
+            android:adjustViewBounds="false"
+            android:scaleType="fitCenter"
+            android:padding="32dp"
+            android:layout_weight="0.5"
+            android:layout_gravity="left"
+            />
+
+        <ImageButton
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:src="@drawable/ic_alarm_add_black"
+            android:background="@android:color/transparent"
+            android:id="@+id/alarm_snooze"
+            android:scaleType="fitCenter"
+            android:padding="32dp"
+            android:layout_weight="0.5"
+            android:layout_gravity="right" />
+
+    </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

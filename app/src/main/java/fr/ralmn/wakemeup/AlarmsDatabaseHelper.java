@@ -11,7 +11,7 @@ import android.provider.BaseColumns;
  */
 public class AlarmsDatabaseHelper extends SQLiteOpenHelper {
 
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
 
     static final String DATABASE_NAME = "alarms.db";
     static final String ALARMS_TABLE_NAME = "alarms";
@@ -30,26 +30,33 @@ public class AlarmsDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if(oldVersion == 1){
+            dropAlarmTable(db);
+            createAlarmTable(db);
+        }
+    }
 
+    private void dropAlarmTable(SQLiteDatabase db){
+        db.execSQL("DROP TABLE " + ALARMS_TABLE_NAME +";");
     }
 
     private void createAlarmTable(SQLiteDatabase db){
         db.execSQL("CREATE TABLE " + ALARMS_TABLE_NAME + " (" +
                 AlarmsColumns._ID + " INTEGER PRIMARY KEY," +
-                AlarmsColumns.HOUR + " INTEGER NOT NULL, " +
-                AlarmsColumns.MINUTES + " INTEGER NOT NULL, " +
+                AlarmsColumns.DATE + " TEXT NOT NULL, " +
                 AlarmsColumns.ENABLED + " INTEGER NOT NULL, " +
-                AlarmsColumns.LABEL + " TEXT NOT NULL);");
+                AlarmsColumns.LABEL + " TEXT NOT NULL, " +
+                AlarmsColumns.ALARM_ID + " INTEGER NOT NULL DEFAULT -1);");
     }
 
     public interface AlarmsColumns extends BaseColumns {
 
         public static final Uri CONTENT_URI = Uri.parse("content://" + AlarmsProvider.AUTHORITY + "/alarms");
 
-        public static final String HOUR = "hour";
-        public static final String MINUTES = "minute";
+        public static final String DATE = "date";
         public static final String ENABLED = "enabled";
         public static final String LABEL = "label";
+        public static final String ALARM_ID = "alarm_id" ;
     }
 
 }

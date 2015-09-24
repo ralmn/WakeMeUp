@@ -2,4 +2,8 @@
 <resources>
     <style name="AppTheme" parent="android:Theme.Material">
     </style>
+
+    <style name="AlarmFullTheme" parent="android:Theme.Material.Wallpaper.NoTitleBar">
+        <item name="android:background">#fff05954</item>
+    </style>
 </resources>
