@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
@@ -56,7 +57,7 @@ public class AlarmActivity extends Activity {
         setContentView(R.layout.activity_alarm);
 
         alarm = Alarm.getAlarm(getContentResolver(), getIntent().getData());
-
+        Log.d("RALMN", "Alarm state : " + alarm.getState());
         if(alarm == null ||!alarm.isFireState()){
             finish();
             return;
@@ -77,12 +78,22 @@ public class AlarmActivity extends Activity {
         labelTextView.setText(alarm.getLabel());
 
         doneButton = (ImageButton) findViewById(R.id.alarm_done);
-        snoozeButton = (ImageButton) findViewById(R.id.alarm_done);
+        snoozeButton = (ImageButton) findViewById(R.id.alarm_snooze);
 
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d("RALMN CLICK", "Dismiss");
                 dismiss();
+            }
+        });
+
+
+        snoozeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("RALMN CLICK", "Snooze");
+                snooze();
             }
         });
 
@@ -91,6 +102,12 @@ public class AlarmActivity extends Activity {
 
     private void snooze() {
         mAlarmHandled = true;
+        Intent snoozeIntent = new Intent(this, AlarmReceiver.class);
+        snoozeIntent.setData(Alarm.getUri(alarm.get_id()));
+        snoozeIntent.setAction(AlarmReceiver.STATE_CHANGE_ACTION);
+        snoozeIntent.putExtra(AlarmReceiver.STATE_CHANGE_NEW_STATE, Alarm.SNOOZE_STATE);
+        sendBroadcast(snoozeIntent);
+        finish();
     }
     private void dismiss(){
         mAlarmHandled = true;
@@ -108,4 +125,9 @@ public class AlarmActivity extends Activity {
     }
 
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mReceiver);
+    }
 }

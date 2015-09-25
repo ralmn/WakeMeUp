@@ -22,6 +22,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         if (INDICATOR_ACTION.equals(intent.getAction())) {
         }else if(STATE_CHANGE_ACTION.equals(intent.getAction())){
             int newState = intent.getIntExtra(STATE_CHANGE_NEW_STATE, -1);
+            Log.d("RALMN NS", newState + "");
             Alarm alarm = Alarm.getAlarm(context.getContentResolver(), intent.getData());
                 if(alarm != null){
                     switch (newState){
@@ -31,6 +32,8 @@ public class AlarmReceiver extends BroadcastReceiver {
                         case Alarm.DISMISS_STATE:
                             alarm.setDismissState(context);
                             break;
+                        case Alarm.SNOOZE_STATE:
+                            alarm.setSnoozeState(context);
                     }
                 }
         }

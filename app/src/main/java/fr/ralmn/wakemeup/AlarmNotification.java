@@ -15,6 +15,8 @@ import fr.ralmn.wakemeup.object.Alarm;
  */
 public class AlarmNotification {
 
+    private final static int SNOOZE_OFFSET = 500;
+
     public static void showAlarmNotification(Context context, Alarm alarm) {
         NotificationManager nm = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -38,6 +40,8 @@ public class AlarmNotification {
         // Setup Snooze Action
         Intent snoozeIntent = new Intent(context, AlarmReceiver.class);
         snoozeIntent.setData(Alarm.getUri(alarm.get_id()));
+        snoozeIntent.setAction(AlarmReceiver.STATE_CHANGE_ACTION);
+        snoozeIntent.putExtra(AlarmReceiver.STATE_CHANGE_NEW_STATE, Alarm.SNOOZE_STATE);
         PendingIntent snoozePendingIntent = PendingIntent.getBroadcast(context, alarm.get_id(),
                 snoozeIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
@@ -81,5 +85,44 @@ public class AlarmNotification {
         NotificationManager nm = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
         nm.cancel(alarm.get_id());
+    }
+
+    public static void showAlarmSnoozeNotification(Context context, Alarm alarm) {
+        clearNotification(context, alarm);
+        NotificationManager nm = (NotificationManager)
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        Resources resources = context.getResources();
+        Notification.Builder notification = new Notification.Builder(context)
+                .setContentTitle(alarm.getLabel())
+                .setContentText(resources.getText(R.string.alarm_alert_snooze_next_alarm_text) + " " + alarm.getSnoozeTimeString(context))
+                .setSmallIcon(R.drawable.ic_alarm_add_black)
+                .setOngoing(true)
+                .setAutoCancel(false)
+                .setDefaults(Notification.DEFAULT_LIGHTS)
+                .setWhen(0)
+                .setCategory(Notification.CATEGORY_ALARM)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setLocalOnly(true);
+
+        Intent dismissIntent = new Intent(context, AlarmReceiver.class);
+        dismissIntent.setData(Alarm.getUri(alarm.get_id()));
+        dismissIntent.setAction(AlarmReceiver.STATE_CHANGE_ACTION);
+        dismissIntent.putExtra(AlarmReceiver.STATE_CHANGE_NEW_STATE, Alarm.DISMISS_STATE);
+
+        PendingIntent dismissPendingIntent = PendingIntent.getBroadcast(context,
+                alarm.get_id(), dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        notification.addAction(R.drawable.ic_alarm_off_black,
+                resources.getString(R.string.alarm_alert_dismiss_text),
+                dismissPendingIntent);
+
+        nm.cancel(alarm.get_id() + SNOOZE_OFFSET);
+        nm.notify(alarm.get_id() + SNOOZE_OFFSET, notification.build());
+    }
+
+    public static void clearAlarmSnoozeNotification(Context context, Alarm alarm){
+        NotificationManager nm = (NotificationManager)
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
+        nm.cancel(alarm.get_id() + SNOOZE_OFFSET);
     }
 }

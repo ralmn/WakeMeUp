@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import fr.ralmn.wakemeup.AlarmNotification;
 import fr.ralmn.wakemeup.AlarmReceiver;
 import fr.ralmn.wakemeup.AlarmService;
 import fr.ralmn.wakemeup.AlarmsDatabaseHelper;
@@ -24,24 +25,30 @@ import fr.ralmn.wakemeup.activities.AlarmListActivity;
 
 public class Alarm {
 
+    public static final int IDLE_STATE = 0;
     public static final int FIRED_STATE = 1;
     public static final int DISMISS_STATE = 2;
+    public static final int SNOOZE_STATE = 3;
 
     private int _id = -1;
     private int alarmId = -1;
 
+    private int state = IDLE_STATE;
+
     private boolean enabled;
 
     private Calendar date;
+    private Calendar snooze;
 
     private String label;
 
-    public Alarm(int _id, Calendar date, String label, boolean enabled, int alarmId) {
+    public Alarm(int _id, Calendar date, String label, boolean enabled, int state) {
         this._id = _id;
-        this.alarmId = alarmId;
+        this.state = state;
         this.enabled = enabled;
         this.date = date;
         this.label = label;
+        Log.d("RALMN STATE SET", state + "");
     }
 
     public Alarm(int _id, Calendar date, String label, boolean enabled) {
@@ -87,10 +94,6 @@ public class Alarm {
         return enabled;
     }
 
-    public int getAlarmId() {
-        return alarmId;
-    }
-
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -98,6 +101,20 @@ public class Alarm {
     public String getTimeString(Context context){
         java.text.DateFormat dateFormat = DateFormat.getTimeFormat(context);
         return dateFormat.format(date.getTime());
+    }
+
+    public String getSnoozeTimeString(Context context) {
+        if(snooze == null) return "";
+        java.text.DateFormat dateFormat = DateFormat.getTimeFormat(context);
+        return dateFormat.format(snooze.getTime());
+    }
+
+    public void setSnooze(Calendar snooze) {
+        this.snooze = snooze;
+    }
+
+    public Calendar getSnooze() {
+        return snooze;
     }
 
     public long getTimeMillis(){
@@ -116,7 +133,14 @@ public class Alarm {
                     cursor.getInt(0),
                     date,
                     cursor.getString(3),
-                    cursor.getInt(4) == 1);
+                    cursor.getInt(4) == 1,
+                    cursor.getInt(5));
+            long snoozeMillis = Long.parseLong(cursor.getString(4));
+            if(snoozeMillis > -1) {
+                Calendar snooze = Calendar.getInstance();
+                snooze.setTimeInMillis(snoozeMillis);
+                alarm.snooze = snooze;
+            }
             alarms.add(alarm);
         }
         return alarms;
@@ -129,7 +153,8 @@ public class Alarm {
         values.put(AlarmsDatabaseHelper.AlarmsColumns.DATE, date.getTimeInMillis());
         values.put(AlarmsDatabaseHelper.AlarmsColumns.LABEL, label);
         values.put(AlarmsDatabaseHelper.AlarmsColumns.ENABLED, enabled);
-        values.put(AlarmsDatabaseHelper.AlarmsColumns.ALARM_ID, alarmId);
+        values.put(AlarmsDatabaseHelper.AlarmsColumns.STATE, state);
+        values.put(AlarmsDatabaseHelper.AlarmsColumns.SNOOZE, snooze != null ? snooze.getTimeInMillis() :  -1);
         return values;
     }
 
@@ -152,13 +177,13 @@ public class Alarm {
         PendingIntent viewIntent = PendingIntent.getActivity(context, _id,
                 createViewAlarmIntent(context), PendingIntent.FLAG_UPDATE_CURRENT);
 
-        long alarmTime = getTimeMillis();
+        long alarmTime = getNextAlarm().getTimeInMillis();
 
         AlarmManager.AlarmClockInfo info = new AlarmManager.AlarmClockInfo(alarmTime, viewIntent);
 
         alarmManager.setAlarmClock(info, operation);
 
-        scheduleInstanceStateChange(context, getDate(), FIRED_STATE);
+        scheduleInstanceStateChange(context, getNextAlarm(), FIRED_STATE);
 
 
     }
@@ -196,11 +221,44 @@ public class Alarm {
     }
 
     public void setFiredState(Context context){
+        AlarmNotification.clearAlarmSnoozeNotification(context, this);
+        this.state = FIRED_STATE;
+        update(context);
         AlarmService.startAlarm(context, this);
     }
 
+    private void update(Context context) {
+        context.getContentResolver().update(getUri(_id), toContentValues(context), null, null);
+    }
+
     public void setDismissState(Context context){
+        this.state = DISMISS_STATE;
+        update(context);
         AlarmService.stopAlarm(context, this);
+        AlarmNotification.clearNotification(context, this);
+        AlarmNotification.clearAlarmSnoozeNotification(context, this);
+        unDefineAlarm(context);
+    }
+
+    public void setSnoozeState(Context context){
+        AlarmService.stopAlarm(context, this);
+
+        this.state = SNOOZE_STATE;
+        this.snooze = Calendar.getInstance();
+        this.snooze.add(Calendar.MINUTE, 10); //MINUTES
+        defineAlarm(context);
+        update(context);
+        //scheduleInstanceStateChange(context, snooze, FIRED_STATE);
+        AlarmNotification.showAlarmSnoozeNotification(context, this);
+
+    }
+
+    public Calendar getNextAlarm(){
+        if(snooze != null && snooze.after(date)){
+            Log.d("RALMN", "use snooze");
+            return snooze;
+        }
+        return date;
     }
 
     public static Intent createIntent(Context context, Class<?> cls, long alarmId) {
@@ -217,7 +275,6 @@ public class Alarm {
         return viewAlarmIntent;
     }
 
-
     public static Alarm getAlarm(ContentResolver contentResolver, Uri data) {
         if(data == null){
             Log.e("RALMN", "data uri null");
@@ -232,11 +289,18 @@ public class Alarm {
             if (cursor.moveToFirst()) {
                 Calendar date = Calendar.getInstance();
                 date.setTimeInMillis(Long.parseLong(cursor.getString(1)));
+                long snoozeMillis = Long.parseLong(cursor.getString(4));
                 result = new Alarm(
                         cursor.getInt(0),
                         date,
                         cursor.getString(3),
-                        cursor.getInt(4) == 1);
+                        cursor.getInt(4) == 1,
+                        cursor.getInt(5));
+                if(snoozeMillis > -1) {
+                    Calendar snooze = Calendar.getInstance();
+                    snooze.setTimeInMillis(snoozeMillis);
+                    result.snooze = snooze;
+                }
             }
         } finally {
             cursor.close();
@@ -245,7 +309,14 @@ public class Alarm {
         return result;
     }
 
-    public boolean isFireState() {
-        return true;
+
+    public int getState() {
+        return state;
     }
+
+    public boolean isFireState() {
+        return state == FIRED_STATE;
+    }
+
+
 }

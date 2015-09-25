@@ -11,7 +11,7 @@ import android.provider.BaseColumns;
  */
 public class AlarmsDatabaseHelper extends SQLiteOpenHelper {
 
-    private static final int VERSION = 2;
+    private static final int VERSION = 3;
 
     static final String DATABASE_NAME = "alarms.db";
     static final String ALARMS_TABLE_NAME = "alarms";
@@ -30,7 +30,7 @@ public class AlarmsDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if(oldVersion == 1){
+        if(oldVersion < 3){
             dropAlarmTable(db);
             createAlarmTable(db);
         }
@@ -42,11 +42,12 @@ public class AlarmsDatabaseHelper extends SQLiteOpenHelper {
 
     private void createAlarmTable(SQLiteDatabase db){
         db.execSQL("CREATE TABLE " + ALARMS_TABLE_NAME + " (" +
-                AlarmsColumns._ID + " INTEGER PRIMARY KEY," +
-                AlarmsColumns.DATE + " TEXT NOT NULL, " +
-                AlarmsColumns.ENABLED + " INTEGER NOT NULL, " +
-                AlarmsColumns.LABEL + " TEXT NOT NULL, " +
-                AlarmsColumns.ALARM_ID + " INTEGER NOT NULL DEFAULT -1);");
+                AlarmsColumns._ID + " INTEGER PRIMARY KEY," + //0
+                AlarmsColumns.DATE + " TEXT NOT NULL, " + // 1
+                AlarmsColumns.ENABLED + " INTEGER NOT NULL, " + //2
+                AlarmsColumns.LABEL + " TEXT NOT NULL, " + //3
+                AlarmsColumns.SNOOZE + " TEXT NOT NULL, " + // 4
+                AlarmsColumns.STATE + " INTEGER NOT NULL DEFAULT -1);"); //5
     }
 
     public interface AlarmsColumns extends BaseColumns {
@@ -56,7 +57,8 @@ public class AlarmsDatabaseHelper extends SQLiteOpenHelper {
         public static final String DATE = "date";
         public static final String ENABLED = "enabled";
         public static final String LABEL = "label";
-        public static final String ALARM_ID = "alarm_id" ;
+        public static final String STATE = "state";
+        public static final String SNOOZE = "snooze";
     }
 
 }

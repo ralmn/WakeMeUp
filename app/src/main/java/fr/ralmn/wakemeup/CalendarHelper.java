@@ -51,11 +51,14 @@ public class CalendarHelper {
 
         cursor.moveToNext();
 
-        return new AndroidCalendar(
-                    cursor.getInt(0),
-                    cursor.getString(1),
-                    cursor.getString(2)
-            );
+        AndroidCalendar calendar = new AndroidCalendar(
+                cursor.getInt(0),
+                cursor.getString(1),
+                cursor.getString(2)
+        );
+        cursor.close();
+
+        return calendar;
     }
 
 
@@ -98,6 +101,7 @@ public class CalendarHelper {
             );
             calendarEvents.add(calendarEvent);
         }
+        cursor.close();
 
         return calendarEvents;
     }
@@ -139,6 +143,8 @@ public class CalendarHelper {
             );
             calendarEvents.add(calendarEvent);
         }
+
+        cursor.close();
 
         return calendarEvents;
     }
