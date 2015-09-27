@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
@@ -46,9 +47,10 @@ public class AlarmListActivity extends Activity {
     }
 
     private void initSharedPreference(){
+
         SharedPreferences sharedPreferences = getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE);
         SharedPreferences defaultSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-
+        Log.d("Ralmn", sharedPreferences.getAll().toString());
         if(!sharedPreferences.contains("calendars")){
             HashSet<String> calendarsId = new HashSet<>();
             List<AndroidCalendar> androidCalendars = CalendarHelper.getCalendars(this);
@@ -74,7 +76,19 @@ public class AlarmListActivity extends Activity {
             defaultSharedPref.edit().putString("default_ringtone", RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString()).apply();
         }
 
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ListView alarmList = (ListView) findViewById(R.id.alarmsListView);
+
+        List<Alarm> alarms = CalendarHelper.calculateWeekAlarms(this); //Alarm.getAlarms(this);
+        Collections.sort(alarms);
+
+        alarmList.setAdapter(new AlarmArrayAdapter(this, R.layout.alarm_list_item, alarms));
+
+        CalendarHelper.calculateNextAlarm(this);
     }
 
     @Override

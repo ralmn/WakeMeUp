@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+   <PreferenceCategory
+       android:key="alarmsbefore_items_category"
+       android:summary="@string/pref_desc_alarmbefore_cat"
+       android:title="@string/pref_title_alarmsbefore_cat">
+   </PreferenceCategory>
+    <PreferenceCategory
+        android:key="alarmsbefore_category">
+    </PreferenceCategory>
+
+
+</PreferenceScreen>

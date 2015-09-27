@@ -159,7 +159,7 @@ public class CalendarHelper {
 
         Set<String> alarmsBefore = context.getSharedPreferences("fr.ralmn.wakemeup", Context.MODE_PRIVATE).getStringSet("alarmsBefore", new HashSet<String>());
         Calendar now = Calendar.getInstance();
-        for(int i = 0; i <= 7;i++){
+        for(int i = 1; i <= 7;i++){
             CalendarEvent lowerEvent = null;
             for (CalendarEvent calendarEvent : getCalendarDayOffSetEvent(context, i)) {
                 if(lowerEvent == null){
@@ -168,10 +168,7 @@ public class CalendarHelper {
                     lowerEvent = calendarEvent;
                 }
             }
-            if(lowerEvent == null){
-               Log.d("RALMN", "Of " +  i + " => NO EVENT !");
-            }else{
-                Log.d("RALMN", "Of " + i + " => " + lowerEvent.toString(context));
+            if(lowerEvent != null){
 
                 for (String alarmBefore : alarmsBefore) {
                     String[] split = alarmBefore.split(":");

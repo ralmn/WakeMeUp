@@ -1,22 +1,26 @@
 package fr.ralmn.wakemeup.activities;
 
-import android.annotation.TargetApi;
-import android.content.Context;
+import android.app.TimePickerDialog;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
-import android.preference.PreferenceFragment;
+import android.preference.PreferenceGroup;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.TimePicker;
+import android.widget.Toast;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import fr.ralmn.wakemeup.AlarmBeforePref;
 import fr.ralmn.wakemeup.CalendarHelper;
 import fr.ralmn.wakemeup.R;
 import fr.ralmn.wakemeup.object.AndroidCalendar;
@@ -32,6 +36,7 @@ import fr.ralmn.wakemeup.object.AndroidCalendar;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
+@SuppressWarnings("deprecation")
 public class SettingsActivity extends PreferenceActivity {
     /**
      * Determines whether to always show the simplified settings UI, where
@@ -47,6 +52,17 @@ public class SettingsActivity extends PreferenceActivity {
         super.onPostCreate(savedInstanceState);
 
         setupSimplePreferencesScreen();
+
+        ListView listView = getListView();
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                ListView listView = (ListView) parent;
+                ListAdapter listAdapter = listView.getAdapter();
+                Object obj = listAdapter.getItem(position);
+                return obj != null && obj instanceof AlarmBeforePref && ((AlarmBeforePref) obj).longClick(view);
+            }
+        });
     }
 
     /**
@@ -59,16 +75,17 @@ public class SettingsActivity extends PreferenceActivity {
 
         addPreferencesFromResource(R.xml.pref_general);
         addPreferencesFromResource(R.xml.pref_calendar);
+        addPreferencesFromResource(R.xml.pref_alarmsbefore);
 
         List<AndroidCalendar> calendar = CalendarHelper.getCalendars(this);
         Log.d("RALMN", "" + calendar.size());
-        PreferenceCategory targetCategory = (PreferenceCategory) findPreference("calendar_category");
+        PreferenceCategory calendarCategory = (PreferenceCategory) findPreference("calendar_category");
 
-        SharedPreferences sharedPreferences = getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE);
+        final SharedPreferences sharedPreferences = getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE);
 
         Set<String> selectedCalendars = sharedPreferences.getStringSet("calendars", new HashSet<String>());
 
-        targetCategory.getSharedPreferences().edit().clear().apply();
+        calendarCategory.getSharedPreferences().edit().clear().apply();
 
         for (final AndroidCalendar androidCalendar : calendar) {
 
@@ -94,65 +111,103 @@ public class SettingsActivity extends PreferenceActivity {
                     }else{
                         selectedCalendars.remove(androidCalendar.getId() +"");
                     }
-                    sharedPreferences.edit().putStringSet("calendarsb",selectedCalendars).apply();
-                    Log.d("RALMN", "Save edit : " + sharedPreferences.getAll().toString());
+                    sharedPreferences.edit().putLong("time", System.currentTimeMillis()).putStringSet("calendars",selectedCalendars).apply();
 
                     return true;
                 }
             });
 
-            targetCategory.addPreference(checkbox);
+            calendarCategory.addPreference(checkbox);
         }
-    }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean onIsMultiPane() {
-        return isXLargeTablet(this) && !isSimplePreferences(this);
-    }
+        final PreferenceGroup alarmBeforeScreen = (PreferenceGroup) findPreference("alarmsbefore_category");
+        final PreferenceCategory alarmBeforeItemsCategory = (PreferenceCategory) findPreference("alarmsbefore_items_category");
+        final Set<String> alarmsBefore = sharedPreferences.getStringSet("alarmsBefore", new HashSet<String>());
 
-    private static boolean isXLargeTablet(Context context) {
-        return (context.getResources().getConfiguration().screenLayout
-                & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_XLARGE;
-    }
+        Log.d("RALMN", sharedPreferences.getAll().toString());
 
-    private static boolean isSimplePreferences(Context context) {
-        //noinspection PointlessBooleanExpression,ConstantConditions
-        return ALWAYS_SIMPLE_PREFS
-                || Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB
-                || !isXLargeTablet(context);
-    }
+        for (String time : alarmsBefore) {
 
-    @Override
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public void onBuildHeaders(List<Header> target) {
-        if (!isSimplePreferences(this)) {
-            loadHeadersFromResource(R.xml.pref_headers, target);
+            AlarmBeforePref pref = createAlarmBeforePref(time);
+            alarmBeforeItemsCategory.addPreference(pref);
         }
+
+        Preference addPref = new Preference(this);
+        addPref.setTitle(R.string.pref_add);
+
+        addPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                TimePickerDialog timePickerDialog = new TimePickerDialog(SettingsActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        String newTime = hourOfDay + ":" + (minute < 10 ? "0"+ minute : minute);
+                        AlarmBeforePref pref = createAlarmBeforePref(newTime);
+                        alarmBeforeItemsCategory.addPreference(pref);
+                        alarmsBefore.add(newTime);
+                        sharedPreferences.edit().putLong("time", System.currentTimeMillis()).putStringSet("alarmsBefore", alarmsBefore).apply();
+                    }
+                }, 1, 0, true);
+                timePickerDialog.show();
+
+
+                return false;
+            }
+        });
+        addPref.setIcon(android.R.drawable.ic_input_add);
+        alarmBeforeScreen.addPreference(addPref);
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class GeneralPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_general);
-        }
-    }
-
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class CalendarPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_calendar);
 
 
+    public AlarmBeforePref createAlarmBeforePref(String time){
+        final AlarmBeforePref prf = new AlarmBeforePref(this);
+        prf.setTitle(time);
+        prf.setLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                PreferenceCategory alarmBeforeCategory = (PreferenceCategory) findPreference("alarmsbefore_items_category");
+                SharedPreferences sharedPreferences =  getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE);
+                Set<String> alarmsBefore = sharedPreferences.getStringSet("alarmsBefore", new HashSet<String>());
+                alarmsBefore.remove(prf.getTitle().toString());
+                sharedPreferences.edit().putLong("time", System.currentTimeMillis()).putStringSet("alarmsBefore", alarmsBefore).apply();
+                alarmBeforeCategory.removePreference(prf);
+                return true;
+            }
+        });
+        prf.setDoubleClickListener(new AlarmBeforePref.DoubleClickListener() {
+            @Override
+            public boolean onClick() {
+                Toast.makeText(SettingsActivity.this, R.string.pref_alarmbefore_tap, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
+        prf.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                final String oldTime = prf.getTitle().toString();
+                String[] split = oldTime.split(":");
+                int hour = Integer.parseInt(split[0]);
+                int minute = Integer.parseInt(split[1]);
+                TimePickerDialog timePickerDialog = new TimePickerDialog(SettingsActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 
-
-        }
+                        String newTime = hourOfDay + ":" + (minute < 10 ? "0"+ minute : minute);
+                        SharedPreferences sharedPreferences = getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE);
+                        Set<String> alarmsBefore = sharedPreferences.getStringSet("alarmsBefore", new HashSet<String>());
+                        alarmsBefore.remove(oldTime);
+                        alarmsBefore.add(newTime);
+                        sharedPreferences.edit().putStringSet("alarmsBefore", alarmsBefore).apply();
+                        prf.setTitle(newTime);
+                    }
+                }, hour, minute, true);
+                timePickerDialog.show();
+                return true;
+            }
+        });
+        return prf;
     }
 
 
