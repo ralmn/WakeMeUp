@@ -4,9 +4,11 @@ import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
+import fr.ralmn.wakemeup.activities.AlarmActivity;
 import fr.ralmn.wakemeup.object.Alarm;
 
 public class AlarmService extends Service {
@@ -90,10 +92,17 @@ public class AlarmService extends Service {
             //TODO : AlarmStateManager.setMissedState(this, mCurrentAlarm);
             stopCurrentAlarm();
         }
-        AlarmNotification.showAlarmNotification(this, alarm);
         AlarmKlaxon.start(this, alarm, false);
         AlarmAlertWakeLock.acquireCpuWakeLock(this);
         mCurrentAlarm = alarm;
+        if(Build.VERSION.SDK_INT >= 16) {
+            AlarmNotification.showAlarmNotification(this, alarm);
+        }else{
+            Intent i = new Intent(this, AlarmActivity.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            i.setData(Alarm.getUri(alarm.get_id()));
+            startActivity(i);
+        }
 
 
     }

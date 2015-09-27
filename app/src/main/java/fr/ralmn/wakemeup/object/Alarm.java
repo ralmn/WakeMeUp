@@ -9,7 +9,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.text.format.DateFormat;
 import android.util.Log;
 
@@ -22,7 +24,6 @@ import fr.ralmn.wakemeup.AlarmReceiver;
 import fr.ralmn.wakemeup.AlarmService;
 import fr.ralmn.wakemeup.AlarmsDatabaseHelper;
 import fr.ralmn.wakemeup.CalendarHelper;
-import fr.ralmn.wakemeup.Utils;
 import fr.ralmn.wakemeup.activities.AlarmListActivity;
 
 public class Alarm implements Comparable<Alarm>{
@@ -144,6 +145,7 @@ public class Alarm implements Comparable<Alarm>{
             }
             alarms.add(alarm);
         }
+        cursor.close();
         return alarms;
     }
 
@@ -178,15 +180,15 @@ public class Alarm implements Comparable<Alarm>{
         PendingIntent viewIntent = PendingIntent.getActivity(context, _id,
                 createViewAlarmIntent(context), PendingIntent.FLAG_UPDATE_CURRENT);
 
-        long alarmTime = getNextAlarm().getTimeInMillis();
+        Calendar nextAlarm = getNextAlarm();
+        long alarmTime = nextAlarm.getTimeInMillis();
 
-        AlarmManager.AlarmClockInfo info = new AlarmManager.AlarmClockInfo(alarmTime, viewIntent);
-
-        alarmManager.setAlarmClock(info, operation);
+        if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            AlarmManager.AlarmClockInfo info = new AlarmManager.AlarmClockInfo(alarmTime, viewIntent);
+            alarmManager.setAlarmClock(info, operation);
+        }
 
         scheduleInstanceStateChange(context, getNextAlarm(), FIRED_STATE);
-
-
     }
 
     private void scheduleInstanceStateChange(Context context, Calendar time, int newState) {
@@ -201,7 +203,7 @@ public class Alarm implements Comparable<Alarm>{
                 stateChangeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if (Utils.isKitKatOrLater()) {
+        if (Build.VERSION.SDK_INT >= 19) {
             am.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
         } else {
             am.set(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent);
@@ -248,11 +250,13 @@ public class Alarm implements Comparable<Alarm>{
         this.state = SNOOZE_STATE;
         this.snooze = Calendar.getInstance();
         int minutes = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("default_snooze_time", "10"));
+        if(minutes < 1 ) minutes = 10;
         this.snooze.add(Calendar.MINUTE, minutes); //MINUTES
         update(context);
         //defineAlarm(context);
         //scheduleInstanceStateChange(context, snooze, FIRED_STATE);
-        AlarmNotification.showAlarmSnoozeNotification(context, this);
+        if(Build.VERSION.SDK_INT >= 16)
+            AlarmNotification.showAlarmSnoozeNotification(context, this);
         CalendarHelper.calculateNextAlarm(context);
 
     }
@@ -274,20 +278,19 @@ public class Alarm implements Comparable<Alarm>{
     }
 
     private Intent createViewAlarmIntent(Context context) {
-        Intent viewAlarmIntent = createIntent(context, AlarmListActivity.class, alarmId) ;
         //viewAlarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        return viewAlarmIntent;
+        return createIntent(context, AlarmListActivity.class, alarmId);
     }
 
     public static Alarm getAlarm(ContentResolver contentResolver, Uri data) {
         if(data == null){
             Log.e("RALMN", "data uri null");
-
+            return null;
         }
         Cursor cursor = contentResolver.query(data, null, null, null, null);
         Alarm result = null;
         if (cursor == null) {
-            return result;
+            return null;
         }
         try {
             if (cursor.moveToFirst()) {
@@ -334,7 +337,7 @@ public class Alarm implements Comparable<Alarm>{
     }
 
 
-    public int compareTo(Alarm a) {
+    public int compareTo(@NonNull Alarm a) {
         return getDate().compareTo(a.getDate());
     }
 

@@ -1,11 +1,13 @@
 package fr.ralmn.wakemeup;
 
+import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.Build;
 
 import fr.ralmn.wakemeup.activities.AlarmActivity;
 import fr.ralmn.wakemeup.object.Alarm;
@@ -17,8 +19,9 @@ public class AlarmNotification {
 
     private final static int SNOOZE_OFFSET = 500;
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public static void showAlarmNotification(Context context, Alarm alarm) {
-        NotificationManager nm = (NotificationManager)
+            NotificationManager nm = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Close dialogs and window shade, so this will display
@@ -32,10 +35,13 @@ public class AlarmNotification {
                 .setOngoing(true)
                 .setAutoCancel(false)
                 .setDefaults(Notification.DEFAULT_LIGHTS)
-                .setWhen(0)
-                .setCategory(Notification.CATEGORY_ALARM)
-                .setVisibility(Notification.VISIBILITY_PUBLIC)
-                .setLocalOnly(true);
+                .setWhen(0);
+
+        if(Build.VERSION.SDK_INT > 22) {
+            notification.setCategory(Notification.CATEGORY_ALARM)
+                    .setVisibility(Notification.VISIBILITY_PUBLIC)
+                    .setLocalOnly(true);
+        }
 
         // Setup Snooze Action
         Intent snoozeIntent = new Intent(context, AlarmReceiver.class);
@@ -45,6 +51,7 @@ public class AlarmNotification {
         PendingIntent snoozePendingIntent = PendingIntent.getBroadcast(context, alarm.get_id(),
                 snoozeIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
+
         notification.addAction(R.drawable.ic_alarm_add_black,
                 resources.getString(R.string.alarm_alert_snooze_text), snoozePendingIntent);
 
@@ -87,6 +94,7 @@ public class AlarmNotification {
         nm.cancel(alarm.get_id());
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public static void showAlarmSnoozeNotification(Context context, Alarm alarm) {
         clearNotification(context, alarm);
         NotificationManager nm = (NotificationManager)
@@ -100,10 +108,13 @@ public class AlarmNotification {
                 .setOngoing(true)
                 .setAutoCancel(false)
                 .setDefaults(Notification.DEFAULT_LIGHTS)
-                .setWhen(0)
-                .setCategory(Notification.CATEGORY_ALARM)
-                .setVisibility(Notification.VISIBILITY_PUBLIC)
-                .setLocalOnly(true);
+                .setWhen(0);
+
+        if(Build.VERSION.SDK_INT > 22) {
+            notification.setCategory(Notification.CATEGORY_ALARM)
+                    .setVisibility(Notification.VISIBILITY_PUBLIC)
+                    .setLocalOnly(true);
+        }
 
         Intent dismissIntent = new Intent(context, AlarmReceiver.class);
         dismissIntent.setData(Alarm.getUri(alarm.get_id()));

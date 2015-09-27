@@ -7,9 +7,6 @@ import java.util.Calendar;
 
 import fr.ralmn.wakemeup.Utils;
 
-/**
- * Created by ralmn on 20/09/15.
- */
 public class CalendarEvent {
 
     private AndroidCalendar calendar;

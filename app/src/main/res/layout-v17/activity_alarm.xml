@@ -17,15 +17,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.25">
 
-            <TextView
+            <TextClock
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:id="@+id/textClock"
             android:textAlignment="center"
-            android:text="00:00"
             android:textSize="@dimen/alarm_item_clock_size"
             android:layout_gravity="top|center"
-            android:autoText="false"
+                android:autoText="false"
             android:gravity="top|center_horizontal"
             android:paddingTop="64dp"
             android:paddingLeft="@dimen/alarm_item_default_padding"

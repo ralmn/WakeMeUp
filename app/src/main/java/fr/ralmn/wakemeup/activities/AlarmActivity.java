@@ -5,12 +5,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.TextView;
+
+import java.util.Calendar;
 
 import fr.ralmn.wakemeup.AlarmReceiver;
 import fr.ralmn.wakemeup.AlarmService;
@@ -88,7 +92,6 @@ public class AlarmActivity extends Activity {
             }
         });
 
-
         snoozeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -97,6 +100,10 @@ public class AlarmActivity extends Activity {
             }
         });
 
+        if(Build.VERSION.SDK_INT < 17){
+            TextView clock = (TextView) findViewById(R.id.textClock);
+            clock.setText(DateFormat.getTimeFormat(this).format(Calendar.getInstance().getTime()));
+        }
 
     }
 

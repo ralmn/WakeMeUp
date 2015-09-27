@@ -12,12 +12,7 @@ import fr.ralmn.wakemeup.object.Alarm;
 public class AlarmHelper {
 
     public static void cancelAndRemoveAllAlarms(Context context){
-
         List<Alarm> alarms = Alarm.getAlarms(context);
-
-
-
-
     }
 
 }

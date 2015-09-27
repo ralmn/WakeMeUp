@@ -7,6 +7,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 
@@ -23,11 +24,6 @@ public class AlarmKlaxon {
 
     // Volume suggested by media team for in-call alarms.
     private static final float IN_CALL_VOLUME = 0.125f;
-
-    private static final AudioAttributes VIBRATION_ATTRIBUTES = new AudioAttributes.Builder()
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .setUsage(AudioAttributes.USAGE_ALARM)
-            .build();
 
     private static boolean started = false;
     private static MediaPlayer mediaPlayer;
@@ -56,7 +52,7 @@ public class AlarmKlaxon {
                              boolean inTelephoneCall) {
         stop(context);
 
-        boolean vibrate = false;
+        boolean vibrate = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("default_vibrate", false);
         Uri alarmNoise = Uri.parse(PreferenceManager.getDefaultSharedPreferences(context).getString("default_ringtone",
                 RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString()));
         context.getSharedPreferences("fr.ralmn.wakemeup", Context.MODE_PRIVATE);
@@ -100,8 +96,12 @@ public class AlarmKlaxon {
             }
         }
 
-        if (vibrate) {
+        if (vibrate && Build.VERSION.SDK_INT >= 21) {
             Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+            AudioAttributes VIBRATION_ATTRIBUTES = new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .build();
             vibrator.vibrate(sVibratePattern, 0, VIBRATION_ATTRIBUTES);
         }
 
