@@ -67,7 +67,11 @@ public class AlarmService extends Service {
             } else if (mCurrentAlarm != null && mCurrentAlarm.get_id() == alarm.get_id()) {
                 Log.e("WAKEMEUP", "Alarm already started for instance: " + alarm.get_id());
                 return Service.START_NOT_STICKY;
+            }else if(alarm.getState() == Alarm.DISMISS_STATE){
+                Log.e("WAKEMEUP", "Alarm is dismissed" + alarm.get_id());
+                return Service.START_NOT_STICKY;
             }
+
             startAlarm(alarm);
         }else if(intent.getAction().equals(STOP_ALARM_ACTION)){
             if(mCurrentAlarm != null && mCurrentAlarm.get_id() != alarm.get_id()){

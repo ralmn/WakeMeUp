@@ -6,10 +6,10 @@ android {
 
     defaultConfig {
         applicationId "fr.ralmn.wakemeup"
-        minSdkVersion 22
+        minSdkVersion 14
         targetSdkVersion 22
-        versionCode 1
-        versionName "1.0"
+        versionCode 1012
+        versionName "1.0.1"
     }
     buildTypes {
         release {

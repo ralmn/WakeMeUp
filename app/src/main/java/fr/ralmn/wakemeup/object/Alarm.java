@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.text.format.DateFormat;
 import android.util.Log;
 
@@ -20,10 +21,11 @@ import fr.ralmn.wakemeup.AlarmNotification;
 import fr.ralmn.wakemeup.AlarmReceiver;
 import fr.ralmn.wakemeup.AlarmService;
 import fr.ralmn.wakemeup.AlarmsDatabaseHelper;
+import fr.ralmn.wakemeup.CalendarHelper;
 import fr.ralmn.wakemeup.Utils;
 import fr.ralmn.wakemeup.activities.AlarmListActivity;
 
-public class Alarm {
+public class Alarm implements Comparable<Alarm>{
 
     public static final int IDLE_STATE = 0;
     public static final int FIRED_STATE = 1;
@@ -48,7 +50,6 @@ public class Alarm {
         this.enabled = enabled;
         this.date = date;
         this.label = label;
-        Log.d("RALMN STATE SET", state + "");
     }
 
     public Alarm(int _id, Calendar date, String label, boolean enabled) {
@@ -154,7 +155,7 @@ public class Alarm {
         values.put(AlarmsDatabaseHelper.AlarmsColumns.LABEL, label);
         values.put(AlarmsDatabaseHelper.AlarmsColumns.ENABLED, enabled);
         values.put(AlarmsDatabaseHelper.AlarmsColumns.STATE, state);
-        values.put(AlarmsDatabaseHelper.AlarmsColumns.SNOOZE, snooze != null ? snooze.getTimeInMillis() :  -1);
+        values.put(AlarmsDatabaseHelper.AlarmsColumns.SNOOZE, snooze != null ? snooze.getTimeInMillis() : -1);
         return values;
     }
 
@@ -238,6 +239,7 @@ public class Alarm {
         AlarmNotification.clearNotification(context, this);
         AlarmNotification.clearAlarmSnoozeNotification(context, this);
         unDefineAlarm(context);
+        CalendarHelper.calculateNextAlarm(context);
     }
 
     public void setSnoozeState(Context context){
@@ -245,17 +247,19 @@ public class Alarm {
 
         this.state = SNOOZE_STATE;
         this.snooze = Calendar.getInstance();
-        this.snooze.add(Calendar.MINUTE, 10); //MINUTES
-        defineAlarm(context);
+        int minutes = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("default_snooze_time", "10"));
+        this.snooze.add(Calendar.MINUTE, minutes); //MINUTES
         update(context);
+        //defineAlarm(context);
         //scheduleInstanceStateChange(context, snooze, FIRED_STATE);
         AlarmNotification.showAlarmSnoozeNotification(context, this);
+        CalendarHelper.calculateNextAlarm(context);
 
     }
 
     public Calendar getNextAlarm(){
         if(snooze != null && snooze.after(date)){
-            Log.d("RALMN", "use snooze");
+            Log.d("RALMN", "use snooze date");
             return snooze;
         }
         return date;
@@ -309,7 +313,6 @@ public class Alarm {
         return result;
     }
 
-
     public int getState() {
         return state;
     }
@@ -318,5 +321,21 @@ public class Alarm {
         return state == FIRED_STATE;
     }
 
+    public String toString(Context context) {
+        return "Alarm{" +
+                "_id=" + _id +
+                ", alarmId=" + alarmId +
+                ", state=" + state +
+                ", enabled=" + enabled +
+                ", date=" + getTimeString(context) +
+                ", snooze=" + getSnoozeTimeString(context) +
+                ", label='" + label + '\'' +
+                '}';
+    }
+
+
+    public int compareTo(Alarm a) {
+        return getDate().compareTo(a.getDate());
+    }
 
 }

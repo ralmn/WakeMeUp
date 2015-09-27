@@ -6,12 +6,11 @@ import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 
-import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -33,24 +32,23 @@ public class AlarmListActivity extends Activity {
         ListView alarmList = (ListView) findViewById(R.id.alarmsListView);
 
         List<Alarm> alarms = CalendarHelper.calculateWeekAlarms(this); //Alarm.getAlarms(this);
-
+        Collections.sort(alarms);
 
         alarmList.setAdapter(new AlarmArrayAdapter(this, R.layout.alarm_list_item, alarms));
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.SECOND, 10);
-        Alarm a = new Alarm(calendar, "Test");
-        Log.d("RALMN", "ALA : " + a.getTimeString(this));
-        a.defineAlarm(this);
+        CalendarHelper.calculateNextAlarm(this);
+
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.add(Calendar.SECOND, 10);
+//        Alarm a = new Alarm(calendar, "Test");
+//        a.defineAlarm(this);
 
     }
 
     private void initSharedPreference(){
         SharedPreferences sharedPreferences = getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE);
         SharedPreferences defaultSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        Log.d("RALMN", sharedPreferences.contains("calendars") + "");
-        Log.d("RALMN", sharedPreferences.getAll().toString());
-        Log.d("RALMN", defaultSharedPref.getAll().toString());
+
         if(!sharedPreferences.contains("calendars")){
             HashSet<String> calendarsId = new HashSet<>();
             List<AndroidCalendar> androidCalendars = CalendarHelper.getCalendars(this);
@@ -75,9 +73,6 @@ public class AlarmListActivity extends Activity {
         if(!defaultSharedPref.contains("default_ringtone")){
             defaultSharedPref.edit().putString("default_ringtone", RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString()).apply();
         }
-        Log.d("RALMN", defaultSharedPref.getAll().toString());
-
-        Log.d("RALMN", sharedPreferences.getAll().toString());
 
 
     }

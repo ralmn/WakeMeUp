@@ -7,14 +7,29 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
-
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/alarm_item_clock_size"
             android:padding="@dimen/alarm_item_default_padding"
-            android:text="00:00"
-            android:id="@+id/alarm_item_textTime"/>
+            android:orientation="vertical">
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/alarm_item_clock_size"
+                android:text="00:00"
+                android:id="@+id/alarm_item_textTime"/>
+            <TextView
+                android:id="@+id/alarm_item_dateText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="24sp"
+                android:textAlignment="center"
+                android:layout_gravity="center"
+                android:textColor="#ff4eb9f0"
+                />
+        </LinearLayout>
+
 
 
         <TableLayout
@@ -31,6 +46,7 @@
         </TableLayout>
 
     </LinearLayout>
+
 
 
 </LinearLayout>

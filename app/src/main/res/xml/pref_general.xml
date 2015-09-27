@@ -6,6 +6,15 @@
         android:summary="@string/pref_description_vibrate"
         android:defaultValue="true" />
 
+    <EditTextPreference
+        android:key="default_snooze_time"
+        android:defaultValue="10"
+        android:inputType="numberSigned"
+        android:title="@string/pref_title_snooze"
+        android:summary="@string/pref_description_snooze"
+        />
+
+
     <RingtonePreference
         android:key="default_ringtone"
         android:title="@string/pref_title_ringtone"

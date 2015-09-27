@@ -8,7 +8,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 import fr.ralmn.wakemeup.R;
 import fr.ralmn.wakemeup.object.Alarm;
@@ -37,7 +39,11 @@ public class AlarmArrayAdapter extends ArrayAdapter<Alarm> {
         Alarm alarm = this.alarms.get(position);
 
         TextView textTime = (TextView) rowView.findViewById(R.id.alarm_item_textTime);
+        TextView textDate = (TextView) rowView.findViewById(R.id.alarm_item_dateText);
+
         textTime.setText(alarm.getTimeString(context));
+        String date = new SimpleDateFormat("EEEE d", Locale.getDefault()).format(alarm.getDate().getTime());
+        textDate.setText(date.substring(0,1).toUpperCase() + date.substring(1));
 
         Switch enabledSwitch = (Switch) rowView.findViewById(R.id.alarm_item_switch);
         enabledSwitch.setChecked(alarm.isEnabled());
