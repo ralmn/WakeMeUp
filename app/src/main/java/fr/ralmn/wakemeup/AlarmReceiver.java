@@ -20,6 +20,9 @@ public class AlarmReceiver extends BroadcastReceiver {
     public void onReceive(final Context context, final Intent intent) {
         Log.d("RALMN ACT",intent.getAction()+ " ok?");
         if (INDICATOR_ACTION.equals(intent.getAction())) {
+        }else if(Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())){
+            CalendarHelper.calculateWeekAlarms(context);
+            CalendarHelper.calculateNextAlarm(context);
         }else if(STATE_CHANGE_ACTION.equals(intent.getAction())){
             int newState = intent.getIntExtra(STATE_CHANGE_NEW_STATE, -1);
             Log.d("RALMN NS", newState + "");

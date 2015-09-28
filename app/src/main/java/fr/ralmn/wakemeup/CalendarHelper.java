@@ -1,6 +1,8 @@
 package fr.ralmn.wakemeup;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.provider.CalendarContract;
 import android.util.Log;
@@ -153,13 +155,11 @@ public class CalendarHelper {
 
     public static ArrayList<Alarm> calculateWeekAlarms(Context context){
 
-
-
         ArrayList<Alarm> alarms = new ArrayList<>();
 
         Set<String> alarmsBefore = context.getSharedPreferences("fr.ralmn.wakemeup", Context.MODE_PRIVATE).getStringSet("alarmsBefore", new HashSet<String>());
         Calendar now = Calendar.getInstance();
-        for(int i = 0; i <= 7;i++){
+        for(int i = 1; i <= 7;i++){
             CalendarEvent lowerEvent = null;
             for (CalendarEvent calendarEvent : getCalendarDayOffSetEvent(context, i)) {
                 if(lowerEvent == null){
@@ -232,6 +232,19 @@ public class CalendarHelper {
         if(nextAlarm != null){
             Log.d("RALMN", nextAlarm.toString(context));
             nextAlarm.defineAlarm(context);
+            ComponentName receiver = new ComponentName(context, AlarmReceiver.class);
+            PackageManager pm = context.getPackageManager();
+
+            pm.setComponentEnabledSetting(receiver,
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP);
+        }else{
+            ComponentName receiver = new ComponentName(context, AlarmReceiver.class);
+            PackageManager pm = context.getPackageManager();
+
+            pm.setComponentEnabledSetting(receiver,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
         }
 
     }
