@@ -199,7 +199,7 @@ public class SettingsActivity extends PreferenceActivity {
                         Set<String> alarmsBefore = sharedPreferences.getStringSet("alarmsBefore", new HashSet<String>());
                         alarmsBefore.remove(oldTime);
                         alarmsBefore.add(newTime);
-                        sharedPreferences.edit().putStringSet("alarmsBefore", alarmsBefore).apply();
+                        sharedPreferences.edit().putLong("time", System.currentTimeMillis()).putStringSet("alarmsBefore", alarmsBefore).apply();
                         prf.setTitle(newTime);
                     }
                 }, hour, minute, true);

@@ -38,7 +38,7 @@ public class Alarm implements Comparable<Alarm>{
 
     private int state = IDLE_STATE;
 
-    private boolean enabled;
+    private boolean enabled = true;
 
     private Calendar date;
     private Calendar snooze;
@@ -66,6 +66,17 @@ public class Alarm implements Comparable<Alarm>{
 
     public Alarm(Calendar date) {
         this(-1, date, "", true);
+    }
+
+    public static Alarm createAlarmFromOpenedCursor(Cursor cursor){
+        Calendar date = Calendar.getInstance();
+        date.setTimeInMillis(Long.parseLong(cursor.getString(1)));
+        return new Alarm(
+                cursor.getInt(0),
+                date,
+                cursor.getString(3),
+                cursor.getInt(2) == 1,
+                cursor.getInt(5));
     }
 
     public int getHours() {
@@ -129,14 +140,7 @@ public class Alarm implements Comparable<Alarm>{
         if(cursor == null) return alarms;
         Log.d("RALMN", cursor.getColumnCount() + "");
         while (cursor.moveToNext()) {
-            Calendar date = Calendar.getInstance();
-            date.setTimeInMillis(Long.parseLong(cursor.getString(1)));
-            Alarm alarm = new Alarm(
-                    cursor.getInt(0),
-                    date,
-                    cursor.getString(3),
-                    cursor.getInt(4) == 1,
-                    cursor.getInt(5));
+            Alarm alarm = createAlarmFromOpenedCursor(cursor);
             long snoozeMillis = Long.parseLong(cursor.getString(4));
             if(snoozeMillis > -1) {
                 Calendar snooze = Calendar.getInstance();
@@ -155,7 +159,7 @@ public class Alarm implements Comparable<Alarm>{
             values.put(AlarmsDatabaseHelper.AlarmsColumns._ID, _id);
         values.put(AlarmsDatabaseHelper.AlarmsColumns.DATE, date.getTimeInMillis());
         values.put(AlarmsDatabaseHelper.AlarmsColumns.LABEL, label);
-        values.put(AlarmsDatabaseHelper.AlarmsColumns.ENABLED, enabled);
+        values.put(AlarmsDatabaseHelper.AlarmsColumns.ENABLED, enabled ? 1 : 0);
         values.put(AlarmsDatabaseHelper.AlarmsColumns.STATE, state);
         values.put(AlarmsDatabaseHelper.AlarmsColumns.SNOOZE, snooze != null ? snooze.getTimeInMillis() : -1);
         return values;
@@ -230,7 +234,7 @@ public class Alarm implements Comparable<Alarm>{
         AlarmService.startAlarm(context, this);
     }
 
-    private void update(Context context) {
+    public void update(Context context) {
         context.getContentResolver().update(getUri(_id), toContentValues(context), null, null);
     }
 
@@ -294,15 +298,8 @@ public class Alarm implements Comparable<Alarm>{
         }
         try {
             if (cursor.moveToFirst()) {
-                Calendar date = Calendar.getInstance();
-                date.setTimeInMillis(Long.parseLong(cursor.getString(1)));
+                result = createAlarmFromOpenedCursor(cursor);
                 long snoozeMillis = Long.parseLong(cursor.getString(4));
-                result = new Alarm(
-                        cursor.getInt(0),
-                        date,
-                        cursor.getString(3),
-                        cursor.getInt(4) == 1,
-                        cursor.getInt(5));
                 if(snoozeMillis > -1) {
                     Calendar snooze = Calendar.getInstance();
                     snooze.setTimeInMillis(snoozeMillis);
@@ -332,6 +329,19 @@ public class Alarm implements Comparable<Alarm>{
                 ", enabled=" + enabled +
                 ", date=" + getTimeString(context) +
                 ", snooze=" + getSnoozeTimeString(context) +
+                ", label='" + label + '\'' +
+                '}';
+    }
+
+    @Override
+    public String toString() {
+        return "Alarm{" +
+                "_id=" + _id +
+                ", alarmId=" + alarmId +
+                ", state=" + state +
+                ", enabled=" + enabled +
+                ", date=" + date.getTimeInMillis() +
+                ", snooze=" + (snooze != null ? snooze.getTimeInMillis() : -1) +
                 ", label='" + label + '\'' +
                 '}';
     }

@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -12,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+import fr.ralmn.wakemeup.CalendarHelper;
 import fr.ralmn.wakemeup.R;
 import fr.ralmn.wakemeup.object.Alarm;
 
@@ -36,17 +38,27 @@ public class AlarmArrayAdapter extends ArrayAdapter<Alarm> {
 
         View rowView = inflater.inflate(this.ressourceId, parent, false);
 
-        Alarm alarm = this.alarms.get(position);
+        final Alarm alarm = this.alarms.get(position);
 
         TextView textTime = (TextView) rowView.findViewById(R.id.alarm_item_textTime);
         TextView textDate = (TextView) rowView.findViewById(R.id.alarm_item_dateText);
 
         textTime.setText(alarm.getTimeString(context));
         String date = new SimpleDateFormat("EEEE d", Locale.getDefault()).format(alarm.getDate().getTime());
-        textDate.setText(date.substring(0,1).toUpperCase() + date.substring(1));
+        textDate.setText(date.substring(0, 1).toUpperCase() + date.substring(1));
 
         Switch enabledSwitch = (Switch) rowView.findViewById(R.id.alarm_item_switch);
         enabledSwitch.setChecked(alarm.isEnabled());
+        enabledSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                alarm.setEnabled(isChecked);
+                alarm.update(context);
+                if(!isChecked)
+                    alarm.unDefineAlarm(context);
+                CalendarHelper.calculateNextAlarm(context);
+            }
+        });
 
 
         return rowView;

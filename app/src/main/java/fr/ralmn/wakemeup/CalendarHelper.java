@@ -153,13 +153,13 @@ public class CalendarHelper {
 
     public static ArrayList<Alarm> calculateWeekAlarms(Context context){
 
-        context.getContentResolver().delete(AlarmsDatabaseHelper.AlarmsColumns.CONTENT_URI, "", null);
+
 
         ArrayList<Alarm> alarms = new ArrayList<>();
 
         Set<String> alarmsBefore = context.getSharedPreferences("fr.ralmn.wakemeup", Context.MODE_PRIVATE).getStringSet("alarmsBefore", new HashSet<String>());
         Calendar now = Calendar.getInstance();
-        for(int i = 1; i <= 7;i++){
+        for(int i = 0; i <= 7;i++){
             CalendarEvent lowerEvent = null;
             for (CalendarEvent calendarEvent : getCalendarDayOffSetEvent(context, i)) {
                 if(lowerEvent == null){
@@ -169,6 +169,7 @@ public class CalendarHelper {
                 }
             }
             if(lowerEvent != null){
+                Log.d("RALMN", i +" : " + lowerEvent.toString(context));
 
                 for (String alarmBefore : alarmsBefore) {
                     String[] split = alarmBefore.split(":");
@@ -179,21 +180,37 @@ public class CalendarHelper {
                     startAlarm.add(Calendar.HOUR_OF_DAY, -hour);
                     startAlarm.add(Calendar.MINUTE, -minutes);
                     if(startAlarm.before(now)) continue;
-                    Alarm alarm = new Alarm(
-                            startAlarm,
-                            lowerEvent.getTitle()
-                    );
+                    Alarm alarm = findOrCreateAlarm(context, startAlarm, lowerEvent.getTitle());
                     alarms.add(alarm);
-                    context.getContentResolver().insert(AlarmsDatabaseHelper.AlarmsColumns.CONTENT_URI, alarm.toContentValues(context));
+
                 }
+            }else{
+                Log.d("RALMN", i + " : lenf" );
             }
         }
 
-
+        context.getContentResolver().delete(AlarmsDatabaseHelper.AlarmsColumns.CONTENT_URI, "", null);
+        for (Alarm alarm : alarms) {
+            context.getContentResolver().insert(AlarmsDatabaseHelper.AlarmsColumns.CONTENT_URI, alarm.toContentValues(context));
+        }
 
         return alarms;
     }
 
+    private static Alarm findOrCreateAlarm(Context context, Calendar calendar, String title){
+        Alarm alarm;
+        Cursor cursor = context.getContentResolver().query(AlarmsDatabaseHelper.AlarmsColumns.CONTENT_URI, null,
+                "("+ AlarmsDatabaseHelper.AlarmsColumns.DATE+" == ?)",
+                new String[]{calendar.getTimeInMillis() + ""},null);
+        if(cursor.moveToNext()) {
+
+            alarm = Alarm.createAlarmFromOpenedCursor(cursor);
+        }else{
+            alarm = new Alarm(calendar, title);
+        }
+        cursor.close();
+        return alarm;
+    }
 
     public static void calculateNextAlarm(Context context){
         List<Alarm> alarms = Alarm.getAlarms(context);
@@ -208,7 +225,7 @@ public class CalendarHelper {
 
         Alarm nextAlarm = null;
         for (Alarm alarm : alarms) {
-            if((nextAlarm == null || alarm.getNextAlarm().before(nextAlarm.getNextAlarm()) )&& alarm.getNextAlarm().after(now)){
+            if((nextAlarm == null || alarm.isEnabled() &&  alarm.getNextAlarm().before(nextAlarm.getNextAlarm()) )&& alarm.getNextAlarm().after(now)){
                 nextAlarm = alarm;
             }
         }
