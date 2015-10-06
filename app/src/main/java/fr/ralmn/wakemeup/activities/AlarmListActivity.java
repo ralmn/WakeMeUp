@@ -1,9 +1,12 @@
 package fr.ralmn.wakemeup.activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.media.RingtoneManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -11,6 +14,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +29,30 @@ import fr.ralmn.wakemeup.object.AndroidCalendar;
 
 public class AlarmListActivity extends Activity {
 
+    private static final int FETCH_PERMS = 1;
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        Log.d("RALMN", String.valueOf(requestCode) + " - " + Arrays.toString(permissions) + " " + Arrays.toString(grantResults));
+        if (Arrays.asList(permissions).contains(Manifest.permission.READ_CALENDAR) && checkCallingOrSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
+            Log.v("WAKEMEUP", "Perms Read caleander allowed");
+            SharedPreferences sharedPreferences = getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE);
+            if (!sharedPreferences.contains("calendars")) {
+                HashSet<String> calendarsId = new HashSet<>();
+                List<AndroidCalendar> androidCalendars = CalendarHelper.getCalendars(this);
+                for (AndroidCalendar androidCalendar : androidCalendars) {
+                    calendarsId.add(androidCalendar.getId() + "");
+                }
+                sharedPreferences.edit().putStringSet("calendars", calendarsId).apply();
+            }
+            ListView alarmList = (ListView) findViewById(R.id.alarmsListView);
+            List<Alarm> alarms = CalendarHelper.calculateWeekAlarms(this); //Alarm.getAlarms(this);
+            Collections.sort(alarms);
+            CalendarHelper.calculateNextAlarm(this);
+            alarmList.setAdapter(new AlarmArrayAdapter(this, R.layout.alarm_list_item, alarms));
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,13 +60,17 @@ public class AlarmListActivity extends Activity {
         initSharedPreference();
 
         ListView alarmList = (ListView) findViewById(R.id.alarmsListView);
-
-        List<Alarm> alarms = CalendarHelper.calculateWeekAlarms(this); //Alarm.getAlarms(this);
-        Collections.sort(alarms);
+        List<Alarm> alarms = new ArrayList<>();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkCallingOrSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_DENIED) {
+            requestPermissions(new String[]{Manifest.permission.READ_CALENDAR}, FETCH_PERMS);
+        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || checkCallingOrSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
+            alarms = CalendarHelper.calculateWeekAlarms(this); //Alarm.getAlarms(this);
+            Collections.sort(alarms);
+            CalendarHelper.calculateNextAlarm(this);
+        }
 
         alarmList.setAdapter(new AlarmArrayAdapter(this, R.layout.alarm_list_item, alarms));
-
-        CalendarHelper.calculateNextAlarm(this);
 
 //        Calendar calendar = Calendar.getInstance();
 //        calendar.add(Calendar.SECOND, 10);
@@ -46,18 +79,22 @@ public class AlarmListActivity extends Activity {
 
     }
 
-    private void initSharedPreference(){
+    private void initSharedPreference() {
 
         SharedPreferences sharedPreferences = getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE);
         SharedPreferences defaultSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        Log.d("Ralmn", sharedPreferences.getAll().toString());
-        if(!sharedPreferences.contains("calendars")){
-            HashSet<String> calendarsId = new HashSet<>();
-            List<AndroidCalendar> androidCalendars = CalendarHelper.getCalendars(this);
-            for (AndroidCalendar androidCalendar : androidCalendars) {
-                calendarsId.add(androidCalendar.getId() + "");
+//        Log.d("Ralmn", sharedPreferences.getAll().toString());
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||checkCallingOrSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_DENIED){
+            if (!sharedPreferences.contains("calendars")) {
+                HashSet<String> calendarsId = new HashSet<>();
+                List<AndroidCalendar> androidCalendars = CalendarHelper.getCalendars(this);
+                for (AndroidCalendar androidCalendar : androidCalendars) {
+                    calendarsId.add(androidCalendar.getId() + "");
+                }
+                sharedPreferences.edit().putStringSet("calendars", calendarsId).apply();
             }
-            sharedPreferences.edit().putStringSet("calendars", calendarsId).apply();
+        }else{
+            requestPermissions(new String[]{Manifest.permission.READ_CALENDAR}, FETCH_PERMS);
         }
 
         if(!sharedPreferences.contains("alarmsBefore")){
@@ -83,12 +120,12 @@ public class AlarmListActivity extends Activity {
         super.onResume();
         ListView alarmList = (ListView) findViewById(R.id.alarmsListView);
 
-        List<Alarm> alarms = CalendarHelper.calculateWeekAlarms(this); //Alarm.getAlarms(this);
+        List<Alarm> alarms = Alarm.getAlarms(this);
         Collections.sort(alarms);
 
         alarmList.setAdapter(new AlarmArrayAdapter(this, R.layout.alarm_list_item, alarms));
-
-        CalendarHelper.calculateNextAlarm(this);
+        if(checkSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED)
+            CalendarHelper.calculateNextAlarm(this);
     }
 
     @Override
@@ -110,8 +147,14 @@ public class AlarmListActivity extends Activity {
             Intent i = new Intent(this, SettingsActivity.class);
             startActivity(i);
             return true;
+        }else if(id == R.id.action_about){
+            Intent i = new Intent(this, AboutActivity.class);
+            startActivity(i);
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+
 }

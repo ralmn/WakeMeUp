@@ -8,7 +8,6 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
@@ -78,7 +77,6 @@ public class SettingsActivity extends PreferenceActivity {
         addPreferencesFromResource(R.xml.pref_alarmsbefore);
 
         List<AndroidCalendar> calendar = CalendarHelper.getCalendars(this);
-        Log.d("RALMN", "" + calendar.size());
         PreferenceCategory calendarCategory = (PreferenceCategory) findPreference("calendar_category");
 
         final SharedPreferences sharedPreferences = getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE);
@@ -123,8 +121,6 @@ public class SettingsActivity extends PreferenceActivity {
         final PreferenceGroup alarmBeforeScreen = (PreferenceGroup) findPreference("alarmsbefore_category");
         final PreferenceCategory alarmBeforeItemsCategory = (PreferenceCategory) findPreference("alarmsbefore_items_category");
         final Set<String> alarmsBefore = sharedPreferences.getStringSet("alarmsBefore", new HashSet<String>());
-
-        Log.d("RALMN", sharedPreferences.getAll().toString());
 
         for (String time : alarmsBefore) {
 

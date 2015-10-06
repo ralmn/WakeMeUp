@@ -15,6 +15,8 @@ import java.util.Set;
  */
 public class Utils {
 
+    private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
+
     public static String joinSet(Set<String> set, String sep) {
         String result = null;
         if(set != null) {
@@ -65,4 +67,6 @@ public class Utils {
     public static boolean isKitKatOrLater() {
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2;
     }
+
+
 }

@@ -30,7 +30,7 @@ public class AlarmNotification {
         Resources resources = context.getResources();
         Notification.Builder notification = new Notification.Builder(context)
                 .setContentTitle(alarm.getLabel())
-                .setContentText(alarm.getTimeString(context))
+                .setContentText(alarm.getNextTimeString(context))
                 .setSmallIcon(R.drawable.ic_alarm_black)
                 .setOngoing(true)
                 .setAutoCancel(false)
@@ -122,10 +122,11 @@ public class AlarmNotification {
         dismissIntent.putExtra(AlarmReceiver.STATE_CHANGE_NEW_STATE, Alarm.DISMISS_STATE);
 
         PendingIntent dismissPendingIntent = PendingIntent.getBroadcast(context,
-                alarm.get_id(), dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                alarm.get_id()+ SNOOZE_OFFSET, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         notification.addAction(R.drawable.ic_alarm_off_black,
                 resources.getString(R.string.alarm_alert_dismiss_text),
                 dismissPendingIntent);
+
 
         nm.cancel(alarm.get_id() + SNOOZE_OFFSET);
         nm.notify(alarm.get_id() + SNOOZE_OFFSET, notification.build());

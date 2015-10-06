@@ -1,9 +1,11 @@
 package fr.ralmn.wakemeup;
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.os.Build;
 import android.provider.CalendarContract;
 import android.util.Log;
 
@@ -22,10 +24,16 @@ import fr.ralmn.wakemeup.object.CalendarEvent;
  */
 public class CalendarHelper {
 
-
     public static List<AndroidCalendar> getCalendars(Context context){
 
         List<AndroidCalendar> calendars = new ArrayList<>();
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            int code = context.checkCallingOrSelfPermission(Manifest.permission.READ_CALENDAR);
+            if(code != PackageManager.PERMISSION_GRANTED){
+                return calendars;
+            }
+        }
 
         Cursor cursor = context.getContentResolver().query(CalendarContract.Calendars.CONTENT_URI, new String[]{
                 CalendarContract.Calendars._ID, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.CALENDAR_COLOR}, null, null, null);
@@ -42,8 +50,14 @@ public class CalendarHelper {
         return calendars;
     }
 
-
     public static AndroidCalendar getCalendar(Context context, int id){
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            int code = context.checkCallingOrSelfPermission(Manifest.permission.READ_CALENDAR);
+            if(code != PackageManager.PERMISSION_GRANTED){
+                return null;
+            }
+        }
 
         Cursor cursor = context.getContentResolver().query(CalendarContract.Calendars.CONTENT_URI, new String[]{
                 CalendarContract.Calendars._ID, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.CALENDAR_COLOR},
@@ -63,9 +77,16 @@ public class CalendarHelper {
         return calendar;
     }
 
-
     public static List<CalendarEvent> getCalendarsWeekEvent(Context context){
         List<CalendarEvent> calendarEvents = new ArrayList<>();
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            int code = context.checkCallingOrSelfPermission(Manifest.permission.READ_CALENDAR);
+            if(code != PackageManager.PERMISSION_GRANTED){
+                return calendarEvents;
+            }
+        }
+
         Set<String> calendarIds = context.getSharedPreferences("fr.ralmn.wakemeup", Context.MODE_PRIVATE).getStringSet("calendars", new HashSet<String>());
 
         String calendarIdsStr = "(" + Utils.joinSet(calendarIds, ", ") + ")";
@@ -110,8 +131,16 @@ public class CalendarHelper {
 
     public static List<CalendarEvent> getCalendarDayOffSetEvent(Context context, int offset){
         List<CalendarEvent> calendarEvents = new ArrayList<>();
-        Set<String> calendarIds = context.getSharedPreferences("fr.ralmn.wakemeup", Context.MODE_PRIVATE).getStringSet("calendars", new HashSet<String>());
 
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            int code = context.checkCallingOrSelfPermission(Manifest.permission.READ_CALENDAR);
+            if(code != PackageManager.PERMISSION_GRANTED){
+                return calendarEvents;
+            }
+        }
+
+        Set<String> calendarIds = context.getSharedPreferences("fr.ralmn.wakemeup", Context.MODE_PRIVATE).getStringSet("calendars", new HashSet<String>());
+        Log.d("RALMN", context.getSharedPreferences("fr.ralmn.wakemeup", Context.MODE_PRIVATE).getAll().toString());
         String calendarIdsStr = "(" + Utils.joinSet(calendarIds, ", ") + ")";
 
         Calendar tomorow = Calendar.getInstance();
@@ -152,10 +181,9 @@ public class CalendarHelper {
         return calendarEvents;
     }
 
-
-    public static ArrayList<Alarm> calculateWeekAlarms(Context context){
-
-        ArrayList<Alarm> alarms = new ArrayList<>();
+    public static List<Alarm> calculateWeekAlarms(Context context){
+        Log.e("WAKEMEUP", "Calculate Week alarm !");
+        List<Alarm> alarms = new ArrayList<>();
 
         Set<String> alarmsBefore = context.getSharedPreferences("fr.ralmn.wakemeup", Context.MODE_PRIVATE).getStringSet("alarmsBefore", new HashSet<String>());
         Calendar now = Calendar.getInstance();
@@ -169,7 +197,7 @@ public class CalendarHelper {
                 }
             }
             if(lowerEvent != null){
-                Log.d("RALMN", i +" : " + lowerEvent.toString(context));
+//                Log.d("RALMN", i +" : " + lowerEvent.toString(context));
 
                 for (String alarmBefore : alarmsBefore) {
                     String[] split = alarmBefore.split(":");
@@ -184,15 +212,28 @@ public class CalendarHelper {
                     alarms.add(alarm);
 
                 }
-            }else{
+            }/*else{
                 Log.d("RALMN", i + " : lenf" );
-            }
+            }*/
         }
 
-        context.getContentResolver().delete(AlarmsDatabaseHelper.AlarmsColumns.CONTENT_URI, "", null);
+
+        context.getContentResolver().delete(AlarmsDatabaseHelper.AlarmsColumns.CONTENT_URI, null, null);
+
+//        alarms.clear();
+//        Calendar c = Calendar.getInstance();
+//        Calendar c1 = Calendar.getInstance();
+//        c.add(Calendar.SECOND, 30);
+//        c1.add(Calendar.SECOND, 60);
+//        Alarm tmp = new Alarm(c, "test");
+//        alarms.add(tmp);
+//        Alarm tmp1 = new Alarm(c1, "test");
+//        alarms.add(tmp1);
+
         for (Alarm alarm : alarms) {
             context.getContentResolver().insert(AlarmsDatabaseHelper.AlarmsColumns.CONTENT_URI, alarm.toContentValues(context));
         }
+        alarms = Alarm.getAlarms(context);
 
         return alarms;
     }
@@ -216,6 +257,7 @@ public class CalendarHelper {
         List<Alarm> alarms = Alarm.getAlarms(context);
 
         if(alarms.size() == 0){
+            Log.e("WAKEMEUP", "Next alarm : size 0 ! Calculate Week alarm !");
             calculateWeekAlarms(context);
             return;
         }
@@ -230,7 +272,7 @@ public class CalendarHelper {
             }
         }
         if(nextAlarm != null){
-            Log.d("RALMN", nextAlarm.toString(context));
+//            Log.d("RALMN", nextAlarm.toString(context));
             nextAlarm.defineAlarm(context);
             ComponentName receiver = new ComponentName(context, AlarmReceiver.class);
             PackageManager pm = context.getPackageManager();

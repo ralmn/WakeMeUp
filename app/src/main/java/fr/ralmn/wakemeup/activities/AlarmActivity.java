@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
@@ -61,7 +60,7 @@ public class AlarmActivity extends Activity {
         setContentView(R.layout.activity_alarm);
 
         alarm = Alarm.getAlarm(getContentResolver(), getIntent().getData());
-        Log.d("RALMN", "Alarm state : " + alarm.getState());
+//        Log.d("RALMN", "Alarm state : " + alarm.getState());
         if(alarm == null ||!alarm.isFireState()){
             finish();
             return;
@@ -87,7 +86,7 @@ public class AlarmActivity extends Activity {
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("RALMN CLICK", "Dismiss");
+//                Log.d("RALMN CLICK", "Dismiss");
                 dismiss();
             }
         });
@@ -95,7 +94,7 @@ public class AlarmActivity extends Activity {
         snoozeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("RALMN CLICK", "Snooze");
+//                Log.d("RALMN CLICK", "Snooze");
                 snooze();
             }
         });

@@ -104,7 +104,7 @@ public class Alarm implements Comparable<Alarm>{
     }
 
     public boolean isEnabled() {
-        return enabled;
+        return enabled && state != DISMISS_STATE;
     }
 
     public void setEnabled(boolean enabled) {
@@ -120,6 +120,11 @@ public class Alarm implements Comparable<Alarm>{
         if(snooze == null) return "";
         java.text.DateFormat dateFormat = DateFormat.getTimeFormat(context);
         return dateFormat.format(snooze.getTime());
+    }
+
+    public String getNextTimeString(Context context) {
+        java.text.DateFormat dateFormat = DateFormat.getTimeFormat(context);
+        return dateFormat.format(getNextAlarm().getTime());
     }
 
     public void setSnooze(Calendar snooze) {
@@ -138,7 +143,6 @@ public class Alarm implements Comparable<Alarm>{
         List<Alarm> alarms = new ArrayList<>();
         Cursor cursor = context.getContentResolver().query(AlarmsDatabaseHelper.AlarmsColumns.CONTENT_URI, null, null, null, null);
         if(cursor == null) return alarms;
-        Log.d("RALMN", cursor.getColumnCount() + "");
         while (cursor.moveToNext()) {
             Alarm alarm = createAlarmFromOpenedCursor(cursor);
             long snoozeMillis = Long.parseLong(cursor.getString(4));
@@ -167,7 +171,7 @@ public class Alarm implements Comparable<Alarm>{
 
     public void defineAlarm(Context context){
 
-        Log.d("RALMN", "define " + toString());
+//        Log.d("RALMN", "define " + toString());
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
@@ -177,9 +181,9 @@ public class Alarm implements Comparable<Alarm>{
             this._id = (int) ContentUris.parseId(uri);
         }
 
-        int flags = _id == -1 ? PendingIntent.FLAG_NO_CREATE :  0; // (if need to dont create : PendingIntent.FLAG_NO_CREATE)
+        //int flags = _id == -1 ? PendingIntent.FLAG_NO_CREATE :  0; // (if need to dont create : PendingIntent.FLAG_NO_CREATE)
         PendingIntent operation = PendingIntent.getBroadcast(context, _id /* requestCode */,
-                new Intent(context, AlarmReceiver.class).setAction(AlarmReceiver.INDICATOR_ACTION), flags);
+                new Intent(context, AlarmReceiver.class).setAction(AlarmReceiver.INDICATOR_ACTION), PendingIntent.FLAG_UPDATE_CURRENT);
 
         PendingIntent viewIntent = PendingIntent.getActivity(context, _id,
                 createViewAlarmIntent(context), PendingIntent.FLAG_UPDATE_CURRENT);
@@ -217,13 +221,32 @@ public class Alarm implements Comparable<Alarm>{
     public void unDefineAlarm(Context context){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-        int flags = _id == -1 ? PendingIntent.FLAG_NO_CREATE :  0; // (if need to dont create : PendingIntent.FLAG_NO_CREATE)
+        int flags = _id == -1 ? PendingIntent.FLAG_NO_CREATE :  0; // (if need to dont create : PendingIntent.FLAG_NO_CREATE
+        Intent stateChangeIntent = new Intent(context, AlarmReceiver.class);
+        stateChangeIntent.setAction(AlarmReceiver.STATE_CHANGE_ACTION);
+        stateChangeIntent.putExtra(AlarmReceiver.STATE_CHANGE_NEW_STATE, FIRED_STATE);
+        stateChangeIntent.setData(getUri(_id));
         PendingIntent operation = PendingIntent.getBroadcast(context, _id /* requestCode */,
                 new Intent(context, AlarmReceiver.class).setAction(AlarmReceiver.INDICATOR_ACTION), flags);
 
         if(operation != null){
             alarmManager.cancel(operation);
         }
+        operation = PendingIntent.getBroadcast(context, _id /* requestCode */,
+                stateChangeIntent, flags);
+
+        if(operation != null){
+            alarmManager.cancel(operation);
+        }
+
+        stateChangeIntent.putExtra(AlarmReceiver.STATE_CHANGE_NEW_STATE, SNOOZE_STATE);
+        operation = PendingIntent.getBroadcast(context, _id /* requestCode */,
+                stateChangeIntent, flags);
+
+        if(operation != null){
+            alarmManager.cancel(operation);
+        }
+
 
     }
 
@@ -240,11 +263,12 @@ public class Alarm implements Comparable<Alarm>{
 
     public void setDismissState(Context context){
         this.state = DISMISS_STATE;
+        unDefineAlarm(context);
         update(context);
         AlarmService.stopAlarm(context, this);
+        //context.getContentResolver().delete(AlarmsDatabaseHelper.AlarmsColumns.CONTENT_URI, "(" + AlarmsDatabaseHelper.AlarmsColumns._ID + "=?)", new String[]{_id + ""});
         AlarmNotification.clearNotification(context, this);
         AlarmNotification.clearAlarmSnoozeNotification(context, this);
-        unDefineAlarm(context);
         CalendarHelper.calculateNextAlarm(context);
     }
 
@@ -256,6 +280,7 @@ public class Alarm implements Comparable<Alarm>{
         int minutes = Integer.parseInt(PreferenceManager.getDefaultSharedPreferences(context).getString("default_snooze_time", "10"));
         if(minutes < 1 ) minutes = 10;
         this.snooze.add(Calendar.MINUTE, minutes); //MINUTES
+        //this.snooze.set(Calendar.SECOND, 0);
         update(context);
         //defineAlarm(context);
         //scheduleInstanceStateChange(context, snooze, FIRED_STATE);
@@ -267,7 +292,7 @@ public class Alarm implements Comparable<Alarm>{
 
     public Calendar getNextAlarm(){
         if(snooze != null && snooze.after(date)){
-            Log.d("RALMN", "use snooze date");
+//            Log.d("RALMN", "use snooze date");
             return snooze;
         }
         return date;
@@ -339,7 +364,7 @@ public class Alarm implements Comparable<Alarm>{
                 "_id=" + _id +
                 ", alarmId=" + alarmId +
                 ", state=" + state +
-                ", enabled=" + enabled +
+                ", enabled=" + enabled + " = " + isEnabled() +
                 ", date=" + date.getTimeInMillis() +
                 ", snooze=" + (snooze != null ? snooze.getTimeInMillis() : -1) +
                 ", label='" + label + '\'' +
@@ -350,5 +375,6 @@ public class Alarm implements Comparable<Alarm>{
     public int compareTo(@NonNull Alarm a) {
         return getDate().compareTo(a.getDate());
     }
+
 
 }

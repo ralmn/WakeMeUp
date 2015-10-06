@@ -76,13 +76,13 @@ public class AlarmService extends Service {
 
             startAlarm(alarm);
         }else if(intent.getAction().equals(STOP_ALARM_ACTION)){
-            if(mCurrentAlarm != null && mCurrentAlarm.get_id() != alarm.get_id()){
+            if(alarm == null || mCurrentAlarm == null){
+                Log.e("WAKEMEUP", (alarm == null ? "Alarm ": "" )  +(mCurrentAlarm == null ? "CurrentAlarm ": " " )+"is null");
+            }else if(mCurrentAlarm != null && mCurrentAlarm.get_id() != alarm.get_id()){
                 Log.e("WAKEMEUP", "Alarm is not current alarm");
             }else
                 stopSelf();
-
         }
-
 
         return Service.START_NOT_STICKY;
     }
@@ -92,6 +92,7 @@ public class AlarmService extends Service {
             //TODO : AlarmStateManager.setMissedState(this, mCurrentAlarm);
             stopCurrentAlarm();
         }
+        Log.d("RALMN", "Start alarm " + alarm.get_id() + " " + alarm.getNextTimeString(this) +" " + alarm.getSnoozeTimeString(this) + " " + alarm.getTimeString(this));
         AlarmKlaxon.start(this, alarm, false);
         AlarmAlertWakeLock.acquireCpuWakeLock(this);
         mCurrentAlarm = alarm;
@@ -111,6 +112,7 @@ public class AlarmService extends Service {
         if (mCurrentAlarm == null) {
             return;
         }
+        //mCurrentAlarm.unDefineAlarm(this);
         AlarmNotification.clearNotification(this, mCurrentAlarm);
         AlarmKlaxon.stop(this);
         AlarmAlertWakeLock.releaseCpuLock();
@@ -121,6 +123,7 @@ public class AlarmService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+//        Log.d("RALMN", "DESTROY");
         stopCurrentAlarm();
     }
 
