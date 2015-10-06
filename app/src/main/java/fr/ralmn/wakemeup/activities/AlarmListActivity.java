@@ -124,7 +124,7 @@ public class AlarmListActivity extends Activity {
         Collections.sort(alarms);
 
         alarmList.setAdapter(new AlarmArrayAdapter(this, R.layout.alarm_list_item, alarms));
-        if(checkSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED)
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||checkCallingOrSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED)
             CalendarHelper.calculateNextAlarm(this);
     }
 
