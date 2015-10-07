@@ -2,9 +2,11 @@ package fr.ralmn.wakemeup;
 
 import android.Manifest;
 import android.content.ComponentName;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.CalendarContract;
 import android.util.Log;
@@ -158,7 +160,7 @@ public class CalendarHelper {
         nextWeek.set(Calendar.MINUTE, 59);
         nextWeek.add(Calendar.DAY_OF_YEAR, offset);
 
-        String selection =
+        /*String selection =
                 "(" + CalendarContract.Events.CALENDAR_ID + " in " + calendarIdsStr
                         + " and " + CalendarContract.Events.DTSTART + " > " + Calendar.getInstance().getTimeInMillis()
                         + " and " + CalendarContract.Events.DTSTART + " > " + tomorow.getTimeInMillis()
@@ -179,8 +181,35 @@ public class CalendarHelper {
             calendarEvents.add(calendarEvent);
         }
 
-        cursor.close();
+        cursor.close();*/
 
+        Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
+        ContentUris.appendId(builder, tomorow.getTimeInMillis());
+        ContentUris.appendId(builder, nextWeek.getTimeInMillis());
+
+        String[] INSTANCE_PROJECTION = new String[] {
+                CalendarContract.Instances.CALENDAR_ID,      // 0
+                CalendarContract.Instances.EVENT_ID,         // 1
+                CalendarContract.Instances.TITLE,          // 2
+                CalendarContract.Instances.BEGIN          // 3
+        };
+
+
+        Cursor cursor = context.getContentResolver().query(builder.build(), INSTANCE_PROJECTION, CalendarContract.Events.CALENDAR_ID + " in " + calendarIdsStr, null,null);
+
+        if(cursor == null || cursor.getCount() == 0) return calendarEvents;
+        while(cursor.moveToNext()){
+            CalendarEvent calendarEvent = new CalendarEvent(
+                    getCalendar(context, cursor.getInt(0)),
+                    cursor.getInt(1),
+                    cursor.getString(2),
+                    Utils.getCalendarFromMillis(cursor.getLong(3))
+            );
+            calendarEvents.add(calendarEvent);
+        }
+
+
+        cursor.close();
         return calendarEvents;
     }
 
@@ -226,8 +255,8 @@ public class CalendarHelper {
 //        alarms.clear();
 //        Calendar c = Calendar.getInstance();
 //        Calendar c1 = Calendar.getInstance();
-//        c.add(Calendar.SECOND, 30);
-//        c1.add(Calendar.SECOND, 60);
+//        c.add(Calendar.SECOND, 15);
+//        c1.add(Calendar.SECOND, 60+15);
 //        Alarm tmp = new Alarm(c, "test");
 //        alarms.add(tmp);
 //        Alarm tmp1 = new Alarm(c1, "test");
@@ -260,7 +289,6 @@ public class CalendarHelper {
 
     public static void calculateNextAlarm(Context context){
         List<Alarm> alarms = Alarm.getAlarms(context);
-        Log.d("RALMN", "calculate next alarm");
         if(alarms.size() == 0){
             Log.e("WAKEMEUP", "Next alarm : size 0 ! Calculate Week alarm !");
             calculateWeekAlarms(context);
@@ -283,7 +311,7 @@ public class CalendarHelper {
             }
         }
         if(nextAlarm != null){
-            Log.d("RALMN", nextAlarm.toString(context));
+//            Log.d("RALMN", nextAlarm.toString(context));
             nextAlarm.defineAlarm(context);
             ComponentName receiver = new ComponentName(context, AlarmReceiver.class);
             PackageManager pm = context.getPackageManager();
