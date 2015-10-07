@@ -260,7 +260,7 @@ public class CalendarHelper {
 
     public static void calculateNextAlarm(Context context){
         List<Alarm> alarms = Alarm.getAlarms(context);
-
+        Log.d("RALMN", "calculate next alarm");
         if(alarms.size() == 0){
             Log.e("WAKEMEUP", "Next alarm : size 0 ! Calculate Week alarm !");
             calculateWeekAlarms(context);
@@ -272,12 +272,18 @@ public class CalendarHelper {
 
         Alarm nextAlarm = null;
         for (Alarm alarm : alarms) {
-            if((nextAlarm == null || alarm.isEnabled() &&  alarm.getNextAlarm().before(nextAlarm.getNextAlarm()) )&& alarm.getNextAlarm().after(now)){
-                nextAlarm = alarm;
+            if((nextAlarm == null ||alarm.getNextAlarm().before(nextAlarm.getNextAlarm()))&& alarm.getNextAlarm().after(now)){
+                if(alarm.isEnabled()) {
+                    nextAlarm = alarm;
+                }else{
+                    alarm.unDefineAlarm(context);
+                }
+            }else{
+                alarm.unDefineAlarm(context);
             }
         }
         if(nextAlarm != null){
-//            Log.d("RALMN", nextAlarm.toString(context));
+            Log.d("RALMN", nextAlarm.toString(context));
             nextAlarm.defineAlarm(context);
             ComponentName receiver = new ComponentName(context, AlarmReceiver.class);
             PackageManager pm = context.getPackageManager();
