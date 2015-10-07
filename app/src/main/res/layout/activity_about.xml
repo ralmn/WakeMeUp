@@ -64,19 +64,19 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textView5"
+        android:id="@+id/aboutRalmn"
         android:layout_alignBottom="@+id/textView4"
         android:layout_alignLeft="@+id/buildName"
         android:layout_alignStart="@+id/buildName"
         android:text="@string/authorURL"
         android:autoLink="web"
-        android:linksClickable="true" />
+        android:linksClickable="true"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/redkillLogo"
-        android:id="@+id/textView6"
+        android:id="@+id/aboutRedkillLogo"
         android:layout_below="@+id/textView4"
         android:layout_alignParentLeft="true"
         android:autoLink="web"
@@ -87,8 +87,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/googleIcon"
-        android:id="@+id/textView7"
-        android:layout_below="@+id/textView6"
+        android:id="@+id/aboutMatrialIcon"
+        android:layout_below="@+id/aboutRedkillLogo"
         android:layout_alignParentLeft="true"
         android:autoLink="web"
         android:linksClickable="true"

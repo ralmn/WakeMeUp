@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.text.util.Linkify;
 import android.widget.TextView;
 
 import fr.ralmn.wakemeup.R;
@@ -22,6 +23,7 @@ public class AboutActivity extends Activity {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
+        Linkify.addLinks(((TextView) findViewById(R.id.aboutRalmn)), Linkify.ALL);
 
     }
 }
