@@ -38,6 +38,8 @@ public class CalendarHelper {
         Cursor cursor = context.getContentResolver().query(CalendarContract.Calendars.CONTENT_URI, new String[]{
                 CalendarContract.Calendars._ID, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.CALENDAR_COLOR}, null, null, null);
 
+        if(cursor == null ||cursor.getCount() == 0) return calendars;
+
         while (cursor.moveToNext()){
             AndroidCalendar calendar = new AndroidCalendar(
                     cursor.getInt(0),
@@ -47,6 +49,7 @@ public class CalendarHelper {
 
             calendars.add(calendar);
         }
+        cursor.close();
         return calendars;
     }
 
@@ -63,7 +66,7 @@ public class CalendarHelper {
                 CalendarContract.Calendars._ID, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.CALENDAR_COLOR},
                 "(" + CalendarContract.Calendars._ID + " = ? )", new String[]{id +""}, null);
 
-        if(cursor.getCount() == 0) return null;
+        if(cursor == null||cursor.getCount() == 0) return null;
 
         cursor.moveToNext();
 
@@ -113,7 +116,7 @@ public class CalendarHelper {
         Cursor cursor = context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, new String[]{
                 CalendarContract.Events.CALENDAR_ID, CalendarContract.Events._ID, CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART
         }, selection, new String[]{}, null);
-
+        if(cursor == null ||cursor.getCount() == 0) return calendarEvents;
 
         while(cursor.moveToNext()){
             CalendarEvent calendarEvent = new CalendarEvent(
@@ -164,7 +167,7 @@ public class CalendarHelper {
         Cursor cursor = context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, new String[]{
                 CalendarContract.Events.CALENDAR_ID, CalendarContract.Events._ID, CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART
         }, selection, new String[]{}, null);
-
+        if(cursor == null ||cursor.getCount() == 0) return calendarEvents;
 
         while(cursor.moveToNext()){
             CalendarEvent calendarEvent = new CalendarEvent(
@@ -243,7 +246,9 @@ public class CalendarHelper {
         Cursor cursor = context.getContentResolver().query(AlarmsDatabaseHelper.AlarmsColumns.CONTENT_URI, null,
                 "("+ AlarmsDatabaseHelper.AlarmsColumns.DATE+" == ?)",
                 new String[]{calendar.getTimeInMillis() + ""},null);
-        if(cursor.moveToNext()) {
+
+
+        if(cursor != null && cursor.moveToNext()) {
 
             alarm = Alarm.createAlarmFromOpenedCursor(cursor);
         }else{
