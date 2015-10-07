@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WakeMeUp</string>
+    <string name="action_about">A propos</string>
+    <string name="action_settings">Paramètres</string>
+    <string name="alarm_alert_dismiss_text">Désactiver</string>
+    <string name="alarm_alert_snooze_next_alarm_text">Prochaine répétitions : </string>
+    <string name="alarm_alert_snooze_text">Répéter</string>
+    <string name="perms_rational_calendar_message">Cette application requière l\'acces au calendrier en lecture ! Merci d\'autoriser la permissions.</string>
+    <string name="perms_rational_calendar_title">Permissions du calendrier</string>
+    <string name="perms_rational_exit">Quitter</string>
+    <string name="perms_rational_retry">Ressayer</string>
+    <string name="pref_add">Ajouter</string>
+    <string name="pref_alarmbefore_tap">Appuie long pour supprimer et appuie simple pour modifier </string>
+    <string name="pref_desc_alarmbefore_cat">Temps entre l\'alarms  et l\'evenement (exemple: evénement à 8h et le temps a 2h, alors l\'alarme sera définie à 6)</string>
+    <string name="pref_description_ringtone">Selectionner votre sonnerie d\'alarme</string>
+    <string name="pref_description_snooze">Temps avant la prochaine répétition</string>
+    <string name="pref_description_vibrate">Activer le vibreur de l\'alarmes</string>
+    <string name="pref_header_alarmsBefore">Ajouter un temps entre une alarme et son évenement</string>
+    <string name="pref_header_calendar">Calendrier</string>
+    <string name="pref_header_general">General</string>
+    <string name="pref_title_alarmsbefore_cat">Alarmes</string>
+    <string name="pref_title_ringtone">Sonneries</string>
+    <string name="pref_title_snooze">Temps de la répétitions</string>
+    <string name="pref_title_vibrate">Vibration</string>
+    <string name="redkillLogo">Merci à Redkill2108 pour le logo (https://twitter.com/Redkill2108)</string>
+    <string name="title_activity_settings">Paramètres</string>
+</resources>
