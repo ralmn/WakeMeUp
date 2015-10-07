@@ -18,5 +18,9 @@
     <string name="redkillLogo"><a href="https://twitter.com/Redkill2108">Thanks to Redkill2108 for the logo</a></string>
     <string name="action_about">About</string>
     <string name="googleIcon"><a href="http://google.github.io/material-design-icons/#licensing">Google material icon - CC-BY 4.0</a></string>
+    <string name="perms_rational_calendar_title">Calendar permissions</string>
+    <string name="perms_rational_calendar_message">This application require the calendar for working ! Please allow the permisions.</string>
+    <string name="perms_rational_retry">Retry</string>
+    <string name="perms_rational_exit">Exit</string>
 
 </resources>

@@ -2,6 +2,8 @@ package fr.ralmn.wakemeup.activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -34,7 +36,7 @@ public class AlarmListActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         Log.d("RALMN", String.valueOf(requestCode) + " - " + Arrays.toString(permissions) + " " + Arrays.toString(grantResults));
-        if (Arrays.asList(permissions).contains(Manifest.permission.READ_CALENDAR) && checkCallingOrSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
+        if (Arrays.asList(permissions).contains(Manifest.permission.READ_CALENDAR) && checkSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
             Log.v("WAKEMEUP", "Perms Read caleander allowed");
             SharedPreferences sharedPreferences = getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE);
             if (!sharedPreferences.contains("calendars")) {
@@ -57,14 +59,37 @@ public class AlarmListActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_alarm_list);
-        initSharedPreference();
 
         ListView alarmList = (ListView) findViewById(R.id.alarmsListView);
         List<Alarm> alarms = new ArrayList<>();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkCallingOrSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_DENIED) {
-            requestPermissions(new String[]{Manifest.permission.READ_CALENDAR}, FETCH_PERMS);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_DENIED) {
+            if(!shouldShowRequestPermissionRationale(Manifest.permission.READ_CALENDAR)) {
+                requestPermissions(new String[]{Manifest.permission.READ_CALENDAR}, FETCH_PERMS);
+            }
+            else {
+                Log.i("WAKEMEUP", "Rationale");
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(R.string.perms_rational_calendar_title);
+                builder.setMessage(R.string.perms_rational_calendar_message);
+                builder.setPositiveButton(R.string.perms_rational_retry, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        requestPermissions(new String[]{Manifest.permission.READ_CALENDAR}, FETCH_PERMS);
+                    }
+                });
+                builder.setNegativeButton(R.string.perms_rational_exit, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        quit();
+                    }
+                });
+                builder.show().show();
+                return;
+            }
         }
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || checkCallingOrSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
+
+        initSharedPreference();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || checkSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
             alarms = CalendarHelper.calculateWeekAlarms(this); //Alarm.getAlarms(this);
             Collections.sort(alarms);
             CalendarHelper.calculateNextAlarm(this);
@@ -83,8 +108,7 @@ public class AlarmListActivity extends Activity {
 
         SharedPreferences sharedPreferences = getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE);
         SharedPreferences defaultSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-//        Log.d("Ralmn", sharedPreferences.getAll().toString());
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||checkCallingOrSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_DENIED){
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||checkSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED){
             if (!sharedPreferences.contains("calendars")) {
                 HashSet<String> calendarsId = new HashSet<>();
                 List<AndroidCalendar> androidCalendars = CalendarHelper.getCalendars(this);
@@ -93,8 +117,6 @@ public class AlarmListActivity extends Activity {
                 }
                 sharedPreferences.edit().putStringSet("calendars", calendarsId).apply();
             }
-        }else{
-            requestPermissions(new String[]{Manifest.permission.READ_CALENDAR}, FETCH_PERMS);
         }
 
         if(!sharedPreferences.contains("alarmsBefore")){
@@ -124,7 +146,7 @@ public class AlarmListActivity extends Activity {
         Collections.sort(alarms);
 
         alarmList.setAdapter(new AlarmArrayAdapter(this, R.layout.alarm_list_item, alarms));
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||checkCallingOrSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED)
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||checkSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED)
             CalendarHelper.calculateNextAlarm(this);
     }
 
@@ -156,5 +178,12 @@ public class AlarmListActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+
+    public void quit() {
+        finish();
+        int pid = android.os.Process.myPid();
+        android.os.Process.killProcess(pid);
+        System.exit(0);
+    }
 
 }
