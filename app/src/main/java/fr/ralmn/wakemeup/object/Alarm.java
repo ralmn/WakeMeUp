@@ -21,10 +21,10 @@ import java.util.List;
 
 import fr.ralmn.wakemeup.AlarmNotification;
 import fr.ralmn.wakemeup.AlarmReceiver;
-import fr.ralmn.wakemeup.AlarmService;
 import fr.ralmn.wakemeup.AlarmsDatabaseHelper;
 import fr.ralmn.wakemeup.CalendarHelper;
 import fr.ralmn.wakemeup.activities.AlarmListActivity;
+import fr.ralmn.wakemeup.services.AlarmService;
 
 public class Alarm implements Comparable<Alarm>{
 

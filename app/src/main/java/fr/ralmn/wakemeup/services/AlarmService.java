@@ -1,4 +1,4 @@
-package fr.ralmn.wakemeup;
+package fr.ralmn.wakemeup.services;
 
 import android.app.Service;
 import android.content.ContentResolver;
@@ -8,6 +8,9 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
+import fr.ralmn.wakemeup.AlarmAlertWakeLock;
+import fr.ralmn.wakemeup.AlarmKlaxon;
+import fr.ralmn.wakemeup.AlarmNotification;
 import fr.ralmn.wakemeup.activities.AlarmActivity;
 import fr.ralmn.wakemeup.object.Alarm;
 

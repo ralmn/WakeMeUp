@@ -16,9 +16,9 @@ import android.widget.TextView;
 import java.util.Calendar;
 
 import fr.ralmn.wakemeup.AlarmReceiver;
-import fr.ralmn.wakemeup.AlarmService;
 import fr.ralmn.wakemeup.R;
 import fr.ralmn.wakemeup.object.Alarm;
+import fr.ralmn.wakemeup.services.AlarmService;
 
 public class AlarmActivity extends Activity {
 
