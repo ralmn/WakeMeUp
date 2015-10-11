@@ -287,12 +287,12 @@ public class CalendarHelper {
         return alarm;
     }
 
-    public static void calculateNextAlarm(Context context){
+    public static Alarm calculateNextAlarm(Context context){
         List<Alarm> alarms = Alarm.getAlarms(context);
         if(alarms.size() == 0){
             Log.e("WAKEMEUP", "Next alarm : size 0 ! Calculate Week alarm !");
             calculateWeekAlarms(context);
-            return;
+            alarms = Alarm.getAlarms(context);
         }
 
         Calendar now = Calendar.getInstance();
@@ -319,6 +319,7 @@ public class CalendarHelper {
             pm.setComponentEnabledSetting(receiver,
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                     PackageManager.DONT_KILL_APP);
+            return nextAlarm;
         }else{
             ComponentName receiver = new ComponentName(context, AlarmReceiver.class);
             PackageManager pm = context.getPackageManager();
@@ -326,6 +327,7 @@ public class CalendarHelper {
             pm.setComponentEnabledSetting(receiver,
                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP);
+            return null;
         }
 
     }

@@ -21,7 +21,7 @@ public class AlarmNotification {
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public static void showAlarmNotification(Context context, Alarm alarm) {
-            NotificationManager nm = (NotificationManager)
+        NotificationManager nm = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Close dialogs and window shade, so this will display

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+ <resources>
     <string name="app_name">WakeMeUp</string>
     <string name="action_about">A propos</string>
     <string name="action_settings">Paramètres</string>
@@ -25,4 +25,6 @@
     <string name="pref_title_vibrate">Vibration</string>
     <string name="redkillLogo">Merci à Redkill2108 pour le logo (https://twitter.com/Redkill2108)</string>
     <string name="title_activity_settings">Paramètres</string>
+    <string name="alarm_cannot_set">Aucune alarme n\'a été définie pour les 7 prochains jours</string>
+    <string name="alarm_next_alarm_set_on">La prochaine alarme est défini pour le</string>
 </resources>

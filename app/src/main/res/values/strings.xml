@@ -22,5 +22,7 @@
     <string name="perms_rational_calendar_message">This application require read the calendar for working ! Please allow the permisions.</string>
     <string name="perms_rational_retry">Retry</string>
     <string name="perms_rational_exit">Exit</string>
+    <string name="alarm_cannot_set">Not any alarm can be defined for the 7 next days.</string>
+    <string name="alarm_next_alarm_set_on">The next alarm is set for</string>
 
 </resources>

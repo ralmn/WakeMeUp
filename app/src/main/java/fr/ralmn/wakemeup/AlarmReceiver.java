@@ -4,7 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import fr.ralmn.wakemeup.activities.AlarmListActivity;
 import fr.ralmn.wakemeup.object.Alarm;
+import fr.ralmn.wakemeup.services.CalculateAlarmsService;
 
 /**
  * Created by ralmn on 20/09/15.
@@ -22,6 +24,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         }else if(Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())){
             CalendarHelper.calculateWeekAlarms(context);
             CalendarHelper.calculateNextAlarm(context);
+            AlarmListActivity.startAutoCheck(context);
         }else if(STATE_CHANGE_ACTION.equals(intent.getAction())){
             int newState = intent.getIntExtra(STATE_CHANGE_NEW_STATE, -1);
 //            Log.d("RALMN NS", newState + "");
@@ -38,6 +41,8 @@ public class AlarmReceiver extends BroadcastReceiver {
                             alarm.setSnoozeState(context);
                     }
                 }
+        }else if(CalculateAlarmsService.CALCULATE_ACTION.equals(intent.getAction())){
+            context.startService(new Intent(context, CalculateAlarmsService.class));
         }
     }
 

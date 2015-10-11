@@ -2,7 +2,10 @@ package fr.ralmn.wakemeup.activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,15 +21,18 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import fr.ralmn.wakemeup.AlarmReceiver;
 import fr.ralmn.wakemeup.CalendarHelper;
 import fr.ralmn.wakemeup.R;
 import fr.ralmn.wakemeup.adapter.AlarmArrayAdapter;
 import fr.ralmn.wakemeup.object.Alarm;
 import fr.ralmn.wakemeup.object.AndroidCalendar;
+import fr.ralmn.wakemeup.services.CalculateAlarmsService;
 
 
 public class AlarmListActivity extends Activity {
@@ -102,6 +108,8 @@ public class AlarmListActivity extends Activity {
 //        Alarm a = new Alarm(calendar, "Test");
 //        a.defineAlarm(this);
 
+        startAutoCheck(this);
+
     }
 
     private void initSharedPreference() {
@@ -173,11 +181,35 @@ public class AlarmListActivity extends Activity {
             Intent i = new Intent(this, AboutActivity.class);
             startActivity(i);
             return true;
+        }else if(id == R.id.action_test){
+
+
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+
+    public static void startAutoCheck(Context context){
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent i = new Intent(context, AlarmReceiver.class);
+        i.setAction(CalculateAlarmsService.CALCULATE_ACTION);
+//            startService(i);
+        PendingIntent startBroadcast = PendingIntent.getBroadcast(context,
+                25, i, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Calendar c = Calendar.getInstance();
+        if(c.get(Calendar.HOUR_OF_DAY) > 20)
+            c.add(Calendar.DAY_OF_YEAR, 1);
+
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.HOUR_OF_DAY, 20);
+        c.set(Calendar.MINUTE, 0);
+
+        long millisReapeat = 1000 * 60 * 60 *  24;
+
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), millisReapeat, startBroadcast);
+    }
 
     public void quit() {
         finish();

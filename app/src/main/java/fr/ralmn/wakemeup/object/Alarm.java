@@ -377,4 +377,9 @@ public class Alarm implements Comparable<Alarm>{
     }
 
 
+    public String getNextFullDateString(Context context) {
+        java.text.DateFormat dateFormat = DateFormat.getDateFormat(context);
+        String dateFormatStr = dateFormat.format(getNextAlarm().getTime());
+        return dateFormatStr + " " + getNextTimeString(context);
+    }
 }
