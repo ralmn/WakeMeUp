@@ -12,7 +12,7 @@
     <string name="perms_rational_retry">Ressayer</string>
     <string name="pref_add">Ajouter</string>
     <string name="pref_alarmbefore_tap">Appui long pour supprimer et appui simple pour modifier</string>
-    <string name="pref_desc_alarmbefore_cat">Temps entre l'alarme et l\'événement (Exemple: événement à 8h et le temps a 2h, alors l\'alarme sera définie à 6h)</string>
+    <string name="pref_desc_alarmbefore_cat">Temps entre l\'alarme et l\'événement (Exemple: événement à 8h et le temps a 2h, alors l\'alarme sera définie à 6h)</string>
     <string name="pref_description_ringtone">Selectionner votre sonnerie d\'alarme</string>
     <string name="pref_description_snooze">Temps avant la prochaine répétition</string>
     <string name="pref_description_vibrate">Activer le vibreur de l\'alarme</string>
