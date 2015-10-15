@@ -26,5 +26,5 @@
     <string name="redkillLogo">Merci à Redkill2108 pour le logo (https://twitter.com/Redkill2108)</string>
     <string name="title_activity_settings">Paramètres</string>
     <string name="alarm_cannot_set">Aucune alarme n\'a été définie pour les 7 prochains jours</string>
-    <string name="alarm_next_alarm_set_on">La prochaine alarme est défini pour le</string>
+    <string name="alarm_next_alarm_set_on">La prochaine alarme est définie pour le</string>
 </resources>
