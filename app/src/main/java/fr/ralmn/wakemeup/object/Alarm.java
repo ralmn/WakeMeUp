@@ -201,11 +201,11 @@ public class Alarm implements Comparable<Alarm>{
 
     private void scheduleInstanceStateChange(Context context, Calendar time, int newState) {
         long timeInMillis = time.getTimeInMillis();
+
         Intent stateChangeIntent = new Intent(context, AlarmReceiver.class);
         stateChangeIntent.setAction(AlarmReceiver.STATE_CHANGE_ACTION);
         stateChangeIntent.putExtra(AlarmReceiver.STATE_CHANGE_NEW_STATE, newState);
         stateChangeIntent.setData(getUri(_id));
-
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, _id,
                 stateChangeIntent, PendingIntent.FLAG_UPDATE_CURRENT);

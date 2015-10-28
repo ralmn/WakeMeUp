@@ -145,7 +145,7 @@ public class CalendarHelper {
         }
 
         Set<String> calendarIds = context.getSharedPreferences("fr.ralmn.wakemeup", Context.MODE_PRIVATE).getStringSet("calendars", new HashSet<String>());
-        Log.d("RALMN", context.getSharedPreferences("fr.ralmn.wakemeup", Context.MODE_PRIVATE).getAll().toString());
+        //Log.d("RALMN", context.getSharedPreferences("fr.ralmn.wakemeup", Context.MODE_PRIVATE).getAll().toString());
         String calendarIdsStr = "(" + Utils.joinSet(calendarIds, ", ") + ")";
 
         Calendar tomorow = Calendar.getInstance();

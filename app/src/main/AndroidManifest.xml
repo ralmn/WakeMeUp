@@ -38,6 +38,7 @@
             android:enabled="false" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="fr.ralmn.wakemeup.calcAlarm" />
             </intent-filter>
         </receiver>
 
@@ -60,11 +61,6 @@
         <activity android:name=".activities.AboutActivity" >
         </activity>
 
-        <service
-            android:name=".services.CalculateAlarmsService"
-            android:enabled="true"
-            android:exported="false" >
-        </service>
     </application>
 
 </manifest>
