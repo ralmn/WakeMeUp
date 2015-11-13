@@ -249,6 +249,9 @@ public class CalendarHelper {
             }*/
         }
 
+        for(Alarm alarm : Alarm.getAlarms(context))
+            alarm.unDefineAlarm(context);
+
 
         context.getContentResolver().delete(AlarmsDatabaseHelper.AlarmsColumns.CONTENT_URI, null, null);
 
