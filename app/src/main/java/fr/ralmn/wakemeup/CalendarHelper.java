@@ -160,28 +160,6 @@ public class CalendarHelper {
         nextWeek.set(Calendar.MINUTE, 59);
         nextWeek.add(Calendar.DAY_OF_YEAR, offset);
 
-        /*String selection =
-                "(" + CalendarContract.Events.CALENDAR_ID + " in " + calendarIdsStr
-                        + " and " + CalendarContract.Events.DTSTART + " > " + Calendar.getInstance().getTimeInMillis()
-                        + " and " + CalendarContract.Events.DTSTART + " > " + tomorow.getTimeInMillis()
-                        + " and " + CalendarContract.Events.DTSTART + " < "  + nextWeek.getTimeInMillis() + " and " + CalendarContract.Events.ALL_DAY + "=0)";
-
-        Cursor cursor = context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, new String[]{
-                CalendarContract.Events.CALENDAR_ID, CalendarContract.Events._ID, CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART
-        }, selection, new String[]{}, null);
-        if(cursor == null ||cursor.getCount() == 0) return calendarEvents;
-
-        while(cursor.moveToNext()){
-            CalendarEvent calendarEvent = new CalendarEvent(
-                    getCalendar(context, cursor.getInt(0)),
-                    cursor.getInt(1),
-                    cursor.getString(2),
-                    Utils.getCalendarFromMillis(cursor.getLong(3))
-            );
-            calendarEvents.add(calendarEvent);
-        }
-
-        cursor.close();*/
 
         Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
         ContentUris.appendId(builder, tomorow.getTimeInMillis());
@@ -219,17 +197,21 @@ public class CalendarHelper {
 
         Set<String> alarmsBefore = context.getSharedPreferences("fr.ralmn.wakemeup", Context.MODE_PRIVATE).getStringSet("alarmsBefore", new HashSet<String>());
         Calendar now = Calendar.getInstance();
-        for(int i = 1; i <= 7;i++){
+        for(int i = 0; i <= 7;i++){
             CalendarEvent lowerEvent = null;
             for (CalendarEvent calendarEvent : getCalendarDayOffSetEvent(context, i)) {
+                Log.d("RALMN " + i, calendarEvent.toString(context));
+                if(calendarEvent.getStartEvent().before(now)) {
+                    continue;
+                }
                 if(lowerEvent == null){
                     lowerEvent = calendarEvent;
-                }else if(lowerEvent.getStartEvent().getTimeInMillis() > calendarEvent.getStartEvent().getTimeInMillis()){
+                }else if(lowerEvent.getStartEvent().after(calendarEvent.getStartEvent())){
                     lowerEvent = calendarEvent;
                 }
             }
             if(lowerEvent != null){
-//                Log.d("RALMN", i +" : " + lowerEvent.toString(context));
+               //Log.d("RALMN", i +" : " + lowerEvent.toString(context));
 
                 for (String alarmBefore : alarmsBefore) {
                     String[] split = alarmBefore.split(":");
@@ -314,7 +296,7 @@ public class CalendarHelper {
             }
         }
         if(nextAlarm != null){
-//            Log.d("RALMN", nextAlarm.toString(context));
+            //Log.d("RALMN", nextAlarm.toString(context));
             nextAlarm.defineAlarm(context);
             ComponentName receiver = new ComponentName(context, AlarmReceiver.class);
             PackageManager pm = context.getPackageManager();
