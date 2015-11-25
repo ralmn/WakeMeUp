@@ -26,6 +26,7 @@ import fr.ralmn.wakemeup.AlarmKlaxon;
 import fr.ralmn.wakemeup.CalendarHelper;
 import fr.ralmn.wakemeup.R;
 import fr.ralmn.wakemeup.Utils;
+import fr.ralmn.wakemeup.object.Alarm;
 import fr.ralmn.wakemeup.object.AndroidCalendar;
 
 /**
@@ -176,6 +177,8 @@ public class SettingsActivity extends PreferenceActivity {
                         alarmBeforeItemsCategory.addPreference(pref);
                         alarmsBefore.add(newTime);
                         sharedPreferences.edit().putLong("time", System.currentTimeMillis()).putStringSet("alarmsBefore", alarmsBefore).apply();
+                        CalendarHelper.calculateWeekAlarms(SettingsActivity.this);
+                        CalendarHelper.calculateNextAlarm(SettingsActivity.this);
                     }
                 }, 1, 0, true);
                 timePickerDialog.show();
@@ -211,6 +214,10 @@ public class SettingsActivity extends PreferenceActivity {
                 alarmsBefore.remove(prf.getTitle().toString());
                 sharedPreferences.edit().putLong("time", System.currentTimeMillis()).putStringSet("alarmsBefore", alarmsBefore).apply();
                 alarmBeforeCategory.removePreference(prf);
+
+                CalendarHelper.calculateWeekAlarms(SettingsActivity.this);
+                CalendarHelper.calculateNextAlarm(SettingsActivity.this);
+
                 return true;
             }
         });
@@ -239,9 +246,12 @@ public class SettingsActivity extends PreferenceActivity {
                         alarmsBefore.add(newTime);
                         sharedPreferences.edit().putLong("time", System.currentTimeMillis()).putStringSet("alarmsBefore", alarmsBefore).apply();
                         prf.setTitle(newTime);
+                        CalendarHelper.calculateWeekAlarms(SettingsActivity.this);
+                        CalendarHelper.calculateNextAlarm(SettingsActivity.this);
                     }
                 }, hour, minute, true);
                 timePickerDialog.show();
+
                 return true;
             }
         });
