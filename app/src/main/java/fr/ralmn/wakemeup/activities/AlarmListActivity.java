@@ -31,6 +31,7 @@ import java.util.List;
 import fr.ralmn.wakemeup.AlarmReceiver;
 import fr.ralmn.wakemeup.CalendarHelper;
 import fr.ralmn.wakemeup.R;
+import fr.ralmn.wakemeup.Utils;
 import fr.ralmn.wakemeup.adapter.AlarmArrayAdapter;
 import fr.ralmn.wakemeup.object.Alarm;
 import fr.ralmn.wakemeup.object.AndroidCalendar;
@@ -116,10 +117,10 @@ public class AlarmListActivity extends Activity {
 
     private void initSharedPreference() {
 
-        SharedPreferences sharedPreferences = getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE);
-        SharedPreferences defaultSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences sharedPreferences = getSharedPreferences(Utils.PREF_NAME, MODE_PRIVATE);
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||checkSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED){
-            if (!sharedPreferences.contains("calendars")) {
+
+        if (!sharedPreferences.contains("calendars")) {
                 HashSet<String> calendarsId = new HashSet<>();
                 List<AndroidCalendar> androidCalendars = CalendarHelper.getCalendars(this);
                 for (AndroidCalendar androidCalendar : androidCalendars) {
@@ -129,20 +130,23 @@ public class AlarmListActivity extends Activity {
             }
         }
 
-        if(!sharedPreferences.contains("alarmsBefore")){
+        Log.d("RALMN", (!sharedPreferences.contains("calendars")) + "" );
+
+        if(!sharedPreferences.contains("alarmsBefore") || sharedPreferences.getStringSet("alarmsBefore", new HashSet<String>()).size() == 0){
+            Log.d("RALMN", "Set alarms before");
             HashSet<String> alarmsBefore = new HashSet<>();
             alarmsBefore.add("2:00");
             alarmsBefore.add("1:55");
             alarmsBefore.add("1:52");
-            sharedPreferences.edit().putStringSet("alarmsBefore", alarmsBefore).apply();
+            sharedPreferences.edit().putStringSet("alarmsBefore", alarmsBefore).putLong("timer", System.currentTimeMillis()).apply();
 
         }
 
-        if(!defaultSharedPref.contains("default_vibrate")){
-            defaultSharedPref.edit().putBoolean("default_vibrate", true).apply();
+        if(!sharedPreferences.contains("default_vibrate")){
+            sharedPreferences.edit().putBoolean("default_vibrate", true).apply();
         }
-        if(!defaultSharedPref.contains("default_ringtone")){
-            defaultSharedPref.edit().putString("default_ringtone", RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString()).apply();
+        if(!sharedPreferences.contains("default_ringtone")){
+            sharedPreferences.edit().putString("default_ringtone", RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString()).apply();
         }
 
     }
@@ -156,7 +160,7 @@ public class AlarmListActivity extends Activity {
         Collections.sort(alarms);
 
         alarmList.setAdapter(new AlarmArrayAdapter(this, R.layout.alarm_list_item, alarms));
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||checkSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED)
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M || checkSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED)
             CalendarHelper.calculateNextAlarm(this);
     }
 

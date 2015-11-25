@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import java.io.IOException;
 
@@ -20,13 +21,17 @@ import fr.ralmn.wakemeup.object.Alarm;
  */
 public class AlarmKlaxon {
 
-    private static final long[] sVibratePattern = new long[] { 500, 500 };
+    private static final long[] sVibratePattern = new long[] { 0, 750, 500 };
 
     // Volume suggested by media team for in-call alarms.
     private static final float IN_CALL_VOLUME = 0.125f;
 
     private static boolean started = false;
     private static MediaPlayer mediaPlayer;
+
+    public static boolean isStarted(){
+        return started;
+    }
 
     public static void stop(Context context) {
 
@@ -52,10 +57,9 @@ public class AlarmKlaxon {
                              boolean inTelephoneCall) {
         stop(context);
 
-        boolean vibrate = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("default_vibrate", false);
-        Uri alarmNoise = Uri.parse(PreferenceManager.getDefaultSharedPreferences(context).getString("default_ringtone",
+        boolean vibrate = context.getSharedPreferences(Utils.PREF_NAME, Context.MODE_PRIVATE).getBoolean("default_vibrate", false);
+        Uri alarmNoise = Uri.parse(context.getSharedPreferences(Utils.PREF_NAME, Context.MODE_PRIVATE).getString("default_ringtone",
                 RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString()));
-        context.getSharedPreferences("fr.ralmn.wakemeup", Context.MODE_PRIVATE);
 
         // Fall back on the default alarm if the database does not have an
         // alarm stored.
@@ -95,16 +99,20 @@ public class AlarmKlaxon {
                 // At this point we just don't play anything.
             }
         }
+        Log.d("RALMN", vibrate + " vibrator");
 
-        if (vibrate && Build.VERSION.SDK_INT >= 21) {
+        if (vibrate) {
             Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-            AudioAttributes VIBRATION_ATTRIBUTES = new AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .setUsage(AudioAttributes.USAGE_ALARM)
-                    .build();
-            vibrator.vibrate(sVibratePattern, 0, VIBRATION_ATTRIBUTES);
+            if (Build.VERSION.SDK_INT >= 21) {
+                AudioAttributes VIBRATION_ATTRIBUTES = new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .build();
+                vibrator.vibrate(sVibratePattern, 0, VIBRATION_ATTRIBUTES);
+            }else{
+                vibrator.vibrate(sVibratePattern, 0);
+            }
         }
-
         started = true;
     }
 

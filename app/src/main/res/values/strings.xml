@@ -24,5 +24,7 @@
     <string name="perms_rational_exit">Exit</string>
     <string name="alarm_cannot_set">Not any alarm can be defined for the 7 next days.</string>
     <string name="alarm_next_alarm_set_on">The next alarm is set for</string>
+    <string name="pref_description_try" >Try the ringtone</string>
+    <string name="pref_title_try">Try</string>
 
 </resources>

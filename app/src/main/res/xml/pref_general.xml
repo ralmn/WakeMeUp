@@ -22,5 +22,11 @@
         android:ringtoneType="alarm"
         />
 
+    <Preference
+        android:key="try_ringtone"
+        android:title="@string/pref_title_try"
+        android:summary="@string/pref_description_try"
+        />
+
 
 </PreferenceScreen>

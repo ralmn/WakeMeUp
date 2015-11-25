@@ -2,6 +2,9 @@ package fr.ralmn.wakemeup;
 
 import android.content.Context;
 import android.os.Build;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -16,6 +19,9 @@ import java.util.Set;
 public class Utils {
 
     private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
+
+    public static String PREF_NAME = "fr.ralmn.wakemeup";
+
 
     public static String joinSet(Set<String> set, String sep) {
         String result = null;

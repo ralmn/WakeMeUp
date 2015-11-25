@@ -3,11 +3,13 @@ package fr.ralmn.wakemeup.activities;
 import android.app.TimePickerDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
@@ -20,8 +22,10 @@ import java.util.List;
 import java.util.Set;
 
 import fr.ralmn.wakemeup.AlarmBeforePref;
+import fr.ralmn.wakemeup.AlarmKlaxon;
 import fr.ralmn.wakemeup.CalendarHelper;
 import fr.ralmn.wakemeup.R;
+import fr.ralmn.wakemeup.Utils;
 import fr.ralmn.wakemeup.object.AndroidCalendar;
 
 /**
@@ -45,6 +49,11 @@ public class SettingsActivity extends PreferenceActivity {
      */
     private static final boolean ALWAYS_SIMPLE_PREFS = true;
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        this.getPreferenceManager().setSharedPreferencesName(Utils.PREF_NAME);
+    }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -71,19 +80,43 @@ public class SettingsActivity extends PreferenceActivity {
      */
     @SuppressWarnings("deprecation")
     private void setupSimplePreferencesScreen() {
+        Log.d("RALMN", this.getPreferenceManager().getSharedPreferencesName());
+        final SharedPreferences sharedPreferences = getSharedPreferences(Utils.PREF_NAME, MODE_PRIVATE);
 
         addPreferencesFromResource(R.xml.pref_general);
         addPreferencesFromResource(R.xml.pref_calendar);
         addPreferencesFromResource(R.xml.pref_alarmsbefore);
 
+        Preference tryPreference = findPreference("try_ringtone");
+        tryPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                Log.d("RALMN", getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE).getAll().toString());
+                if(AlarmKlaxon.isStarted()){
+                    AlarmKlaxon.stop(SettingsActivity.this);
+                    return  true;
+                }
+                AlarmKlaxon.start(SettingsActivity.this, null, false);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("RALMN", "Try end");
+                        AlarmKlaxon.stop(SettingsActivity.this);
+                    }
+                }, 20000);
+
+                return true;
+            }
+        });
+
         List<AndroidCalendar> calendar = CalendarHelper.getCalendars(this);
         PreferenceCategory calendarCategory = (PreferenceCategory) findPreference("calendar_category");
 
-        final SharedPreferences sharedPreferences = getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE);
 
         Set<String> selectedCalendars = sharedPreferences.getStringSet("calendars", new HashSet<String>());
 
-        calendarCategory.getSharedPreferences().edit().clear().apply();
+        //calendarCategory.getSharedPreferences().edit().clear().apply();
 
         for (final AndroidCalendar androidCalendar : calendar) {
 
@@ -121,7 +154,8 @@ public class SettingsActivity extends PreferenceActivity {
         final PreferenceGroup alarmBeforeScreen = (PreferenceGroup) findPreference("alarmsbefore_category");
         final PreferenceCategory alarmBeforeItemsCategory = (PreferenceCategory) findPreference("alarmsbefore_items_category");
         final Set<String> alarmsBefore = sharedPreferences.getStringSet("alarmsBefore", new HashSet<String>());
-
+        Log.d("RALMN", "alarmsBefore " + alarmsBefore.toString());
+        Log.d("RALMN", "all " + sharedPreferences.getAll().toString());
         for (String time : alarmsBefore) {
 
             AlarmBeforePref pref = createAlarmBeforePref(time);
@@ -134,11 +168,10 @@ public class SettingsActivity extends PreferenceActivity {
         addPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-
                 TimePickerDialog timePickerDialog = new TimePickerDialog(SettingsActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        String newTime = hourOfDay + ":" + (minute < 10 ? "0"+ minute : minute);
+                        String newTime = hourOfDay + ":" + (minute < 10 ? "0" + minute : minute);
                         AlarmBeforePref pref = createAlarmBeforePref(newTime);
                         alarmBeforeItemsCategory.addPreference(pref);
                         alarmsBefore.add(newTime);
@@ -153,6 +186,15 @@ public class SettingsActivity extends PreferenceActivity {
         });
         addPref.setIcon(android.R.drawable.ic_input_add);
         alarmBeforeScreen.addPreference(addPref);
+
+        /*final CheckBoxPreference vibratePreference = (CheckBoxPreference) findPreference("default_vibrate");
+        vibratePreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                return sharedPreferences.edit().putLong("time", System.currentTimeMillis()).putBoolean(vibratePreference.getKey(), vibratePreference.isChecked()).commit();
+            }
+        });*/
+
     }
 
 
