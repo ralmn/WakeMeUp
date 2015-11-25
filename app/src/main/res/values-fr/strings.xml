@@ -27,4 +27,6 @@
     <string name="title_activity_settings">Paramètres</string>
     <string name="alarm_cannot_set">Aucune alarme n\'a été définie pour les 7 prochains jours</string>
     <string name="alarm_next_alarm_set_on">La prochaine alarme est définie pour le</string>
+   <string name="pref_description_try">Essayer la sonnerie</string>
+   <string name="pref_title_try">Essayez</string>
 </resources>
