@@ -130,10 +130,8 @@ public class AlarmListActivity extends Activity {
             }
         }
 
-        Log.d("RALMN", (!sharedPreferences.contains("calendars")) + "" );
 
         if(!sharedPreferences.contains("alarmsBefore") || sharedPreferences.getStringSet("alarmsBefore", new HashSet<String>()).size() == 0){
-            Log.d("RALMN", "Set alarms before");
             HashSet<String> alarmsBefore = new HashSet<>();
             alarmsBefore.add("2:00");
             alarmsBefore.add("1:55");

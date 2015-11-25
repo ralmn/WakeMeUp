@@ -93,7 +93,6 @@ public class SettingsActivity extends PreferenceActivity {
             @Override
             public boolean onPreferenceClick(Preference preference) {
 
-                Log.d("RALMN", getSharedPreferences("fr.ralmn.wakemeup", MODE_PRIVATE).getAll().toString());
                 if(AlarmKlaxon.isStarted()){
                     AlarmKlaxon.stop(SettingsActivity.this);
                     return  true;
@@ -102,7 +101,6 @@ public class SettingsActivity extends PreferenceActivity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d("RALMN", "Try end");
                         AlarmKlaxon.stop(SettingsActivity.this);
                     }
                 }, 20000);
@@ -144,7 +142,6 @@ public class SettingsActivity extends PreferenceActivity {
                         selectedCalendars.remove(androidCalendar.getId() +"");
                     }
                     sharedPreferences.edit().putLong("time", System.currentTimeMillis()).putStringSet("calendars",selectedCalendars).apply();
-
                     return true;
                 }
             });
@@ -155,8 +152,6 @@ public class SettingsActivity extends PreferenceActivity {
         final PreferenceGroup alarmBeforeScreen = (PreferenceGroup) findPreference("alarmsbefore_category");
         final PreferenceCategory alarmBeforeItemsCategory = (PreferenceCategory) findPreference("alarmsbefore_items_category");
         final Set<String> alarmsBefore = sharedPreferences.getStringSet("alarmsBefore", new HashSet<String>());
-        Log.d("RALMN", "alarmsBefore " + alarmsBefore.toString());
-        Log.d("RALMN", "all " + sharedPreferences.getAll().toString());
         for (String time : alarmsBefore) {
 
             AlarmBeforePref pref = createAlarmBeforePref(time);
