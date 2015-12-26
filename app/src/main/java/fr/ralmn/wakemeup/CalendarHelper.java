@@ -40,7 +40,11 @@ public class CalendarHelper {
         Cursor cursor = context.getContentResolver().query(CalendarContract.Calendars.CONTENT_URI, new String[]{
                 CalendarContract.Calendars._ID, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.CALENDAR_COLOR}, null, null, null);
 
-        if(cursor == null ||cursor.getCount() == 0) return calendars;
+        if(cursor == null) return calendars;
+        if(cursor.getCount() == 0){
+            cursor.close();
+            return calendars;
+        }
 
         while (cursor.moveToNext()){
             AndroidCalendar calendar = new AndroidCalendar(
@@ -68,7 +72,11 @@ public class CalendarHelper {
                 CalendarContract.Calendars._ID, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.CALENDAR_COLOR},
                 "(" + CalendarContract.Calendars._ID + " = ? )", new String[]{id +""}, null);
 
-        if(cursor == null||cursor.getCount() == 0) return null;
+        if(cursor == null) return null;
+        if(cursor.getCount() == 0){
+            cursor.close();
+            return null;
+        }
 
         cursor.moveToNext();
 
@@ -118,7 +126,12 @@ public class CalendarHelper {
         Cursor cursor = context.getContentResolver().query(CalendarContract.Events.CONTENT_URI, new String[]{
                 CalendarContract.Events.CALENDAR_ID, CalendarContract.Events._ID, CalendarContract.Events.TITLE, CalendarContract.Events.DTSTART
         }, selection, new String[]{}, null);
-        if(cursor == null ||cursor.getCount() == 0) return calendarEvents;
+
+        if(cursor == null) return calendarEvents;
+        if(cursor.getCount() == 0){
+            cursor.close();
+            return calendarEvents;
+        }
 
         while(cursor.moveToNext()){
             CalendarEvent calendarEvent = new CalendarEvent(
@@ -175,7 +188,12 @@ public class CalendarHelper {
 
         Cursor cursor = context.getContentResolver().query(builder.build(), INSTANCE_PROJECTION, CalendarContract.Events.CALENDAR_ID + " in " + calendarIdsStr, null,null);
 
-        if(cursor == null || cursor.getCount() == 0) return calendarEvents;
+        if(cursor == null) return calendarEvents;
+        if(cursor.getCount() == 0){
+            cursor.close();
+            return calendarEvents;
+        }
+
         while(cursor.moveToNext()){
             CalendarEvent calendarEvent = new CalendarEvent(
                     getCalendar(context, cursor.getInt(0)),
