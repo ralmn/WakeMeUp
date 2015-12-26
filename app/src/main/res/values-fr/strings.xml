@@ -29,4 +29,5 @@
     <string name="alarm_next_alarm_set_on">La prochaine alarme est définie pour le</string>
    <string name="pref_description_try">Essayer la sonnerie</string>
    <string name="pref_title_try">Essayez</string>
+   <string name="appwidget_text">Widget Alarme</string>
 </resources>
