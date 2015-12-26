@@ -21,7 +21,7 @@ import fr.ralmn.wakemeup.object.Alarm;
  */
 public class AlarmKlaxon {
 
-    private static final long[] sVibratePattern = new long[] { 0, 750, 500 };
+    private static final long[] sVibratePattern = new long[] { 0, 100, 100,100, 100,100, 100,100, 100,750, 500,750, 500,750, 500 };
 
     // Volume suggested by media team for in-call alarms.
     private static final float IN_CALL_VOLUME = 0.125f;
