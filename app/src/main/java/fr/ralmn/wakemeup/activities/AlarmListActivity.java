@@ -40,6 +40,7 @@ import fr.ralmn.wakemeup.object.AndroidCalendar;
 public class AlarmListActivity extends Activity {
 
     private static final int FETCH_PERMS = 1;
+    private AlarmReceiver alarmReceiver = null;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -66,7 +67,10 @@ public class AlarmListActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        registerReceiver(new AlarmReceiver(), new IntentFilter(AlarmReceiver.CALCULATE_ACTION));
+
+        alarmReceiver = new AlarmReceiver();
+        registerReceiver(alarmReceiver, new IntentFilter(AlarmReceiver.CALCULATE_ACTION));
+
         setContentView(R.layout.activity_alarm_list);
 
         ListView alarmList = (ListView) findViewById(R.id.alarmsListView);
@@ -193,8 +197,8 @@ public class AlarmListActivity extends Activity {
 
     public static void startAutoCheck(Context context){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
         Intent intent = new Intent(AlarmReceiver.CALCULATE_ACTION);
-        //intent.setAction();
 
         PendingIntent startBroadcast = PendingIntent.getBroadcast(context,
                 -999, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -202,21 +206,26 @@ public class AlarmListActivity extends Activity {
         Calendar c = Calendar.getInstance();
 
         c.set(Calendar.SECOND, 0);
-       c.set(Calendar.HOUR_OF_DAY, 20);
+        c.set(Calendar.HOUR_OF_DAY, 20);
         c.set(Calendar.MINUTE, 0);
         if(c.before(Calendar.getInstance()))
             c.add(Calendar.DAY_OF_YEAR, 1);
 
-
         Log.d("RALMN", "next update at : " + DateFormat.getDateFormat(context).format(c.getTime()) + " - " + DateFormat.getTimeFormat(context).format(c.getTime()));
         alarmManager.cancel(startBroadcast);
-
 
         if (Build.VERSION.SDK_INT >= 19) {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), startBroadcast);
         } else {
             alarmManager.set(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), startBroadcast);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        unregisterReceiver(alarmReceiver);
     }
 
     public void quit() {
