@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="fr.ralmn.wakemeup" >
+    package="fr.ralmn.wakemeup">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.READ_CALENDAR" />
@@ -12,10 +12,10 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_icon2"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <activity
             android:name=".activities.AlarmListActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,13 +25,11 @@
 
         <provider
             android:name=".AlarmsProvider"
-            android:authorities="fr.ralmn.wakemeup" >
-        </provider>
+            android:authorities="fr.ralmn.wakemeup"/>
 
         <activity
             android:name=".activities.SettingsActivity"
-            android:label="@string/title_activity_settings" >
-        </activity>
+            android:label="@string/title_activity_settings"/>
 
         <receiver
             android:name=".AlarmReceiver"
@@ -45,8 +43,7 @@
         <service
             android:name=".services.AlarmService"
             android:enabled="true"
-            android:exported="true" >
-        </service>
+            android:exported="true"/>
 
         <activity
             android:name=".activities.AlarmActivity"
@@ -56,11 +53,9 @@
             android:showOnLockScreen="true"
             android:taskAffinity=""
             android:theme="@style/AlarmFullTheme"
-            android:windowSoftInputMode="stateAlwaysHidden" >
-        </activity>
-        <activity android:name=".activities.AboutActivity" >
-        </activity>
+            android:windowSoftInputMode="stateAlwaysHidden"/>
 
+        <activity android:name=".activities.AboutActivity"/>
     </application>
 
 </manifest>
