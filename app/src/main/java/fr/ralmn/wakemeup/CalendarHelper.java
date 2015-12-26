@@ -218,10 +218,7 @@ public class CalendarHelper {
         for(int i = 0; i <= 7;i++){
             CalendarEvent lowerEvent = null;
             for (CalendarEvent calendarEvent : getCalendarDayOffSetEvent(context, i)) {
-                Log.d("RALMN " + i, calendarEvent.toString(context));
-                if(calendarEvent.getStartEvent().before(now)) {
-                    continue;
-                }
+                //Log.d("RALMN " + i, calendarEvent.toString(context));
                 if(lowerEvent == null){
                     lowerEvent = calendarEvent;
                 }else if(lowerEvent.getStartEvent().after(calendarEvent.getStartEvent())){
@@ -313,6 +310,9 @@ public class CalendarHelper {
                 alarm.unDefineAlarm(context);
             }
         }
+
+        Utils.forceUpdateWidget(context);
+
         if(nextAlarm != null){
             //Log.d("RALMN", nextAlarm.toString(context));
             nextAlarm.defineAlarm(context);

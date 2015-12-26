@@ -26,5 +26,6 @@
     <string name="alarm_next_alarm_set_on">The next alarm is set for</string>
     <string name="pref_description_try" >Try the ringtone</string>
     <string name="pref_title_try">Try</string>
+    <string name="appwidget_text">Alarms Widget</string>
 
 </resources>

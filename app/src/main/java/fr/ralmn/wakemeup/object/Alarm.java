@@ -140,8 +140,17 @@ public class Alarm implements Comparable<Alarm>{
     }
 
     public static List<Alarm> getAlarms(Context context){
+        return getAlarms(context, null, "");
+    }
+
+    public static List<Alarm> getAlarms(Context context, Calendar after, String selectionStr){
         List<Alarm> alarms = new ArrayList<>();
-        Cursor cursor = context.getContentResolver().query(AlarmsDatabaseHelper.AlarmsColumns.CONTENT_URI, null, null, null, null);
+
+        if(selectionStr == null) selectionStr = "";
+
+        selectionStr += after != null ? " " + AlarmsDatabaseHelper.AlarmsColumns.SNOOZE + " >=  " + after.getTimeInMillis() : "";
+        //Log.d("RALMN", selectionStr);
+        Cursor cursor = context.getContentResolver().query(AlarmsDatabaseHelper.AlarmsColumns.CONTENT_URI, null, selectionStr, new String[]{}, null);
         if(cursor == null) return alarms;
         while (cursor.moveToNext()) {
             Alarm alarm = createAlarmFromOpenedCursor(cursor);
@@ -318,9 +327,8 @@ public class Alarm implements Comparable<Alarm>{
         }
         Cursor cursor = contentResolver.query(data, null, null, null, null);
         Alarm result = null;
-        if (cursor == null) {
-            return null;
-        }
+        if (cursor == null) return null;
+
         try {
             if (cursor.moveToFirst()) {
                 result = createAlarmFromOpenedCursor(cursor);
@@ -331,9 +339,9 @@ public class Alarm implements Comparable<Alarm>{
                     result.snooze = snooze;
                 }
             }
-        } finally {
-            cursor.close();
-        }
+        }catch (Exception e){}
+
+        cursor.close();
 
         return result;
     }

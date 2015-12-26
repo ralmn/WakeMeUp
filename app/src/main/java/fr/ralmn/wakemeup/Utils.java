@@ -1,10 +1,14 @@
 package fr.ralmn.wakemeup;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -12,6 +16,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.Set;
+
+import fr.ralmn.wakemeup.widget.AlarmsWidget;
 
 /**
  * Created by ralmn on 20/09/15.
@@ -72,6 +78,19 @@ public class Utils {
 
     public static boolean isKitKatOrLater() {
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2;
+    }
+
+    public static void forceUpdateWidget(Context context){
+        Log.d("RALMN", "Force update");
+        AppWidgetManager man = AppWidgetManager.getInstance(context);
+        int[] ids = man.getAppWidgetIds(
+                new ComponentName(context,AlarmsWidget.class));
+        for(int id : ids){
+            Intent updateIntent = new Intent(context, AlarmsWidget.class);
+            updateIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id);
+            context.sendBroadcast(updateIntent);
+        }
     }
 
 
